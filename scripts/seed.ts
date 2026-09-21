@@ -1,19 +1,19 @@
 /**
  * Demo/dev seed — creates one contest, real entries built from the two
- * photos in scripts/seed-photos/, and enough SUCCEEDED vote transactions to
+ * photos in public/demo/, and enough SUCCEEDED vote transactions to
  * populate a working leaderboard. Not run in production (no seed step in
  * the build script) — for local dev and client demos only.
+ *
+ * Photos live in public/demo/ (committed, static) rather than going through
+ * the StorageProvider — that keeps this demo working on a fresh Vercel
+ * deploy with zero R2/Cloudflare setup. Real entries still go through the
+ * storage abstraction via the upload flow once that's built.
  */
-import { readFile } from "node:fs/promises";
-import path from "node:path";
 import { prisma } from "../src/lib/prisma";
-import { getStorageProvider } from "../src/lib/storage";
 import { uniqueSlugForContest, recomputeVoteCount } from "../src/lib/entries";
 
-const SEED_PHOTOS_DIR = path.join(process.cwd(), "scripts", "seed-photos");
-
 interface SeedEntry {
-  file: string;
+  photoUrl: string;
   petName: string;
   ownerName: string;
   ownerEmail: string;
@@ -23,7 +23,7 @@ interface SeedEntry {
 
 const SEED_ENTRIES: SeedEntry[] = [
   {
-    file: "1.jpg",
+    photoUrl: "/demo/biscuit.jpg",
     petName: "Biscuit",
     ownerName: "Dana Whitfield",
     ownerEmail: "dana.whitfield@example.com",
@@ -31,7 +31,7 @@ const SEED_ENTRIES: SeedEntry[] = [
     votePurchases: [25, 10, 50, 5, 100, 20],
   },
   {
-    file: "2.jpg",
+    photoUrl: "/demo/rusty.jpg",
     petName: "Rusty",
     ownerName: "Marcus Delgado",
     ownerEmail: "marcus.delgado@example.com",
@@ -53,8 +53,6 @@ async function main() {
     },
   });
 
-  const storage = getStorageProvider();
-
   for (const seed of SEED_ENTRIES) {
     const existing = await prisma.entry.findFirst({
       where: { contestId: contest.id, petName: seed.petName },
@@ -63,10 +61,6 @@ async function main() {
       console.log(`Skipping ${seed.petName} — already seeded.`);
       continue;
     }
-
-    const buffer = await readFile(path.join(SEED_PHOTOS_DIR, seed.file));
-    const key = `entries/${contest.id}-${seed.file}`;
-    const { url } = await storage.upload({ key, buffer, contentType: "image/jpeg" });
 
     const slug = await uniqueSlugForContest(contest.id, seed.petName);
 
@@ -77,7 +71,7 @@ async function main() {
         caption: seed.caption,
         ownerName: seed.ownerName,
         ownerEmail: seed.ownerEmail,
-        photoUrl: url,
+        photoUrl: seed.photoUrl,
         slug,
         status: "APPROVED",
       },
