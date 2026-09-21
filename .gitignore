@@ -18,6 +18,10 @@
 /playwright-report/
 /test-results/
 
+# local-storage-provider uploads — runtime output, not source; the local
+# storage provider writes here on `npm run dev` / `npm run seed`
+/public/uploads/
+
 # misc
 .DS_Store
 *.pem
