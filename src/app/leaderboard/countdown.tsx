@@ -14,12 +14,25 @@ function timeLeft(endsAt: string): string {
 }
 
 export function Countdown({ endsAt }: { endsAt: string }) {
-  const [label, setLabel] = useState(() => timeLeft(endsAt));
+  // Starts null so the server-rendered markup and the client's first render
+  // match exactly (both render nothing) — computing the real value only
+  // client-side, after mount, avoids a hydration mismatch against the
+  // server's render time vs. the browser's.
+  const [label, setLabel] = useState<string | null>(null);
 
   useEffect(() => {
-    const id = setInterval(() => setLabel(timeLeft(endsAt)), 1000);
-    return () => clearInterval(id);
+    const tick = () => setLabel(timeLeft(endsAt));
+    const id = setInterval(tick, 1000);
+    // Deferred via setTimeout rather than called directly in the effect
+    // body, so the first tick doesn't trigger a same-render cascading
+    // setState — it still lands on the next microtask, effectively
+    // immediately.
+    const initial = setTimeout(tick, 0);
+    return () => {
+      clearInterval(id);
+      clearTimeout(initial);
+    };
   }, [endsAt]);
 
-  return <span>{label}</span>;
+  return <span>{label ?? " "}</span>;
 }

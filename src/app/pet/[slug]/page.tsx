@@ -58,7 +58,14 @@ export default async function PetPage({ params }: { params: Promise<{ slug: stri
 
         <div className="overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-sm">
           <div className="relative aspect-square w-full bg-neutral-100">
-            <Image src={entry.photoUrl} alt={entry.petName} fill priority className="object-cover" />
+            <Image
+              src={entry.photoUrl}
+              alt={entry.petName}
+              fill
+              priority
+              sizes="(min-width: 672px) 672px, 100vw"
+              className="object-cover"
+            />
           </div>
           <div className="p-6 text-center">
             <h1 className="text-2xl font-semibold text-brand-primary-dark">{entry.petName}</h1>

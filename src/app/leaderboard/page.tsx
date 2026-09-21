@@ -77,7 +77,7 @@ export default async function LeaderboardPage() {
                       {MEDAL[index] ?? index + 1}
                     </span>
                     <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-full bg-neutral-100">
-                      <Image src={entry.photoUrl} alt={entry.petName} fill className="object-cover" />
+                      <Image src={entry.photoUrl} alt={entry.petName} fill sizes="56px" className="object-cover" />
                     </div>
                     <span className="flex-1 truncate font-medium text-neutral-900">{entry.petName}</span>
                     <span className="shrink-0 text-sm font-semibold text-brand-primary">

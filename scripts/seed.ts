@@ -1,8 +1,14 @@
 /**
- * Demo/dev seed — creates one contest, real entries built from the two
+ * Demo/dev seed — creates one contest, real entries built from the three
  * photos in public/demo/, and enough SUCCEEDED vote transactions to
- * populate a working leaderboard. Not run in production (no seed step in
- * the build script) — for local dev and client demos only.
+ * populate a working leaderboard. Idempotent (skips a pet name that
+ * already exists), so it's safe to run more than once.
+ *
+ * Runs in production ONLY when RUN_SEED_ON_BUILD=true is set in Vercel's
+ * environment variables (see package.json's "build" script) — this is a
+ * temporary demo-content hook for the client preview, not a permanent part
+ * of the deploy. Remove that env var (or this hook) once real entries
+ * start flowing in through the actual entry-fee flow.
  *
  * Photos live in public/demo/ (committed, static) rather than going through
  * the StorageProvider — that keeps this demo working on a fresh Vercel
@@ -37,6 +43,14 @@ const SEED_ENTRIES: SeedEntry[] = [
     ownerEmail: "marcus.delgado@example.com",
     caption: "Rusty exploring the city on a warm evening walk.",
     votePurchases: [10, 10, 5],
+  },
+  {
+    photoUrl: "/demo/whiskers.jpg",
+    petName: "Whiskers",
+    ownerName: "Priya Anand",
+    ownerEmail: "priya.anand@example.com",
+    caption: "Whiskers holding down the good armchair, as always.",
+    votePurchases: [15, 40, 10, 5],
   },
 ];
 
