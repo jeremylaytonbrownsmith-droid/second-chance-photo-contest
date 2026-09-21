@@ -1,0 +1,263 @@
+// Second Chance Pet Adoptions — Photo Contest
+// See CLAUDE.md for hard rules: integer cents, no card storage, every
+// payment event logged, nothing hard deleted, payment processor behind an
+// adapter interface.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Enums
+// ---------------------------------------------------------------------------
+
+enum EntryStatus {
+  PENDING // awaiting payment or moderation
+  APPROVED // live in the public gallery
+  REJECTED // moderator rejected — stays in the system, never deleted
+  DISQUALIFIED // was live, then pulled — e.g. fraud, rule violation
+}
+
+enum TransactionType {
+  ENTRY_FEE
+  VOTE_PURCHASE
+  REFUND
+}
+
+enum TransactionStatus {
+  PENDING
+  SUCCEEDED
+  FAILED
+  REFUNDED
+}
+
+enum PaymentProcessorName {
+  MOCK
+  STRIPE
+  BBMS
+}
+
+enum AdminRole {
+  SUPER_ADMIN
+  MODERATOR
+}
+
+enum VerificationPurpose {
+  FREE_VOTE
+  ENTRY_EMAIL
+}
+
+// ---------------------------------------------------------------------------
+// Contest configuration — a row per contest instance (this year's contest,
+// next year's contest, etc.), not a single global settings blob, so past
+// contests stay queryable on their own terms.
+// ---------------------------------------------------------------------------
+
+model Contest {
+  id   String @id @default(cuid())
+  name String
+
+  startsAt DateTime
+  endsAt   DateTime
+
+  entryFeeCents    Int  @default(1000) // $10, admin configurable
+  votePriceCents   Int  @default(100) // $1/vote, admin configurable
+  // Vote packages as [{ "votes": 5, "priceCents": 500 }, ...] plus a
+  // custom-amount option handled in the UI — flexible without a migration
+  // every time the packages change.
+  votePackagesJson Json @default("[{\"votes\":5},{\"votes\":10},{\"votes\":25},{\"votes\":50},{\"votes\":100}]")
+
+  goalCents Int @default(5000000) // $50,000, matches the prior GoGo result
+
+  // No-purchase-necessary safeguard — see CLAUDE.md rule 7/8. Defaults ON;
+  // do not flip this off without a logged, deliberate, legally-reviewed
+  // decision.
+  freeVoteEnabled Boolean @default(true)
+
+  roundsEnabled    Boolean @default(false)
+  // e.g. [{ "roundNumber": 1, "advanceCount": 50, "endsAt": "..." }]
+  roundsConfigJson Json?
+
+  moderationEnabled Boolean @default(true)
+
+  prizeText  String? @db.Text
+  prizeImage String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  entries      Entry[]
+  transactions Transaction[]
+  freeVotes    FreeVoteLog[]
+
+  @@map("contests")
+}
+
+// ---------------------------------------------------------------------------
+// Entries
+// ---------------------------------------------------------------------------
+
+model Entry {
+  id        String  @id @default(cuid())
+  contestId String
+  contest   Contest @relation(fields: [contestId], references: [id])
+
+  petName    String
+  caption    String @db.Text
+  ownerName  String
+  ownerEmail String
+
+  photoUrl String // Cloudflare R2 object URL
+  slug     String // URL-safe, unique per contest — /pet/{slug}
+
+  status             EntryStatus @default(PENDING)
+  moderationNote     String?
+  disqualifiedReason String?
+
+  // Denormalized vote count for fast leaderboard reads. Source of truth is
+  // still the sum of successful VOTE_PURCHASE transactions + FreeVoteLog
+  // rows for this entry — this column is a cache, recomputed on every vote,
+  // never hand-edited.
+  voteCount Int @default(0)
+
+  eliminated   Boolean   @default(false)
+  eliminatedAt DateTime?
+
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  voidedAt   DateTime?
+  voidReason String?
+
+  transactions Transaction[]
+  freeVotes    FreeVoteLog[]
+  fraudFlags   FraudFlag[]
+
+  @@unique([contestId, slug])
+  @@index([contestId, status])
+  @@index([contestId, voteCount])
+  @@map("entries")
+}
+
+// ---------------------------------------------------------------------------
+// Money — every payment event, success or failure, lives here. This is the
+// nonprofit's donor/tax record as much as it is app state.
+// ---------------------------------------------------------------------------
+
+model Transaction {
+  id        String  @id @default(cuid())
+  contestId String
+  contest   Contest @relation(fields: [contestId], references: [id])
+  entryId   String?
+  entry     Entry?  @relation(fields: [entryId], references: [id])
+
+  type   TransactionType
+  status TransactionStatus @default(PENDING)
+
+  amountCents  Int
+  voteQuantity Int? // set for VOTE_PURCHASE
+
+  processor    PaymentProcessorName
+  processorRef String? // checkout session / charge id from the processor
+
+  // Donor record fields — needed for the Raiser's Edge NXT export and
+  // year-end tax documentation, not just for running the checkout.
+  donorName    String
+  donorEmail   String
+  donorAddress String?
+  donorCity    String?
+  donorState   String?
+  donorZip     String?
+
+  refundedAt   DateTime?
+  refundReason String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  fraudFlags FraudFlag[]
+
+  @@index([contestId, status])
+  @@index([entryId])
+  @@index([donorEmail])
+  @@map("transactions")
+}
+
+// ---------------------------------------------------------------------------
+// Free daily vote — the no-purchase-necessary safeguard. One free vote per
+// verified email per entry per day. See CLAUDE.md rule 7 before touching
+// this model's behavior.
+// ---------------------------------------------------------------------------
+
+model FreeVoteLog {
+  id        String  @id @default(cuid())
+  contestId String
+  contest   Contest @relation(fields: [contestId], references: [id])
+  entryId   String
+  entry     Entry   @relation(fields: [entryId], references: [id])
+
+  email   String
+  votedOn DateTime @db.Date // calendar day, for the one-per-day constraint
+
+  createdAt DateTime @default(now())
+
+  @@unique([contestId, entryId, email, votedOn])
+  @@map("free_vote_logs")
+}
+
+// Email verification for the free vote (and available for entry-email
+// confirmation later) — short-lived code, not a password.
+model EmailVerification {
+  id      String              @id @default(cuid())
+  email   String
+  code    String
+  purpose VerificationPurpose
+
+  expiresAt  DateTime
+  verifiedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([email, purpose])
+  @@map("email_verifications")
+}
+
+// ---------------------------------------------------------------------------
+// Admin
+// ---------------------------------------------------------------------------
+
+model AdminUser {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  passwordHash String
+  role         AdminRole @default(MODERATOR)
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  voidedAt  DateTime?
+
+  @@map("admin_users")
+}
+
+// ---------------------------------------------------------------------------
+// Fraud tooling — flags for review, not automatic blocks (a human decides).
+// ---------------------------------------------------------------------------
+
+model FraudFlag {
+  id            String       @id @default(cuid())
+  entryId       String?
+  entry         Entry?       @relation(fields: [entryId], references: [id])
+  transactionId String?
+  transaction   Transaction? @relation(fields: [transactionId], references: [id])
+
+  reason     String
+  resolvedAt DateTime?
+  resolution String?
+
+  createdAt DateTime @default(now())
+
+  @@map("fraud_flags")
+}
