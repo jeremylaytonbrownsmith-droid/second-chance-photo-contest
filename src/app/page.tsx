@@ -19,7 +19,7 @@ const STEPS = [
   },
   {
     title: "Win prizes",
-    body: "Every vote raises money for Second Chance. The winning pet's photo becomes a painted portrait, featured on a specially brewed, limited-edition beer.",
+    body: "The winning pet's photo becomes a painted portrait, featured on a specially brewed, limited-edition beer.",
   },
 ];
 
@@ -160,23 +160,27 @@ export default async function HomePage() {
       <section className="border-t border-neutral-200 bg-white px-6 py-14">
         <div className="mx-auto max-w-4xl">
           <h2 className="mb-8 text-center text-xl font-semibold text-brand-primary-dark">How it works</h2>
-          <div className="grid gap-6 sm:grid-cols-3">
+          <div className="grid items-start gap-8 sm:grid-cols-3">
             {STEPS.map((step, index) => {
               const content = (
                 <>
-                  <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-brand-primary text-sm font-bold text-white transition-transform duration-200 group-hover:scale-110">
+                  <div className="mb-3 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-primary text-sm font-bold text-white transition-transform duration-200 group-hover:scale-110">
                     {index + 1}
                   </div>
                   <h3 className="mb-1 font-semibold text-neutral-900">{step.title}</h3>
-                  <p className="text-sm text-neutral-600">{step.body}</p>
+                  <p className="text-sm leading-relaxed text-neutral-600">{step.body}</p>
                 </>
               );
               return index === 0 ? (
-                <Link key={step.title} href="/enter" className="group rounded-lg text-center transition-colors">
+                <Link
+                  key={step.title}
+                  href="/enter"
+                  className="group flex flex-col items-start rounded-lg text-left transition-colors"
+                >
                   {content}
                 </Link>
               ) : (
-                <div key={step.title} className="group text-center">
+                <div key={step.title} className="group flex flex-col items-start text-left">
                   {content}
                 </div>
               );

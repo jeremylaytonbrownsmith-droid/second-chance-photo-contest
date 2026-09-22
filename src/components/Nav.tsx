@@ -22,10 +22,10 @@ export function Nav() {
           <Image
             src={theme.logo.src}
             alt={theme.logo.alt}
-            width={140}
-            height={50}
+            width={180}
+            height={64}
             unoptimized
-            className="h-9 w-auto transition-transform duration-200 hover:scale-105"
+            className="h-12 w-auto transition-transform duration-200 hover:scale-105"
           />
         </Link>
 
