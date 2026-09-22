@@ -50,25 +50,27 @@ export default async function PetPage({ params }: { params: Promise<{ slug: stri
     <main className="flex-1 bg-brand-accent px-6 py-12">
       <div className="mx-auto max-w-2xl">
         <div className="mb-6 flex flex-col items-center gap-2 text-center">
-          <Image src={theme.logo.src} alt={theme.logo.alt} width={160} height={56} unoptimized className="h-10 w-auto" />
-          <Link href="/gallery" className="text-sm font-medium text-brand-primary hover:underline">
-            ← Back to the gallery
+          <Link href="/gallery" className="group inline-flex items-center gap-1 text-sm font-medium text-brand-primary">
+            <span className="transition-transform duration-200 group-hover:-translate-x-1">←</span>
+            <span className="transition-colors duration-200 group-hover:text-brand-primary-dark">
+              Back to the gallery
+            </span>
           </Link>
         </div>
 
         <div className="overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-sm">
-          <div className="relative aspect-square w-full bg-neutral-100">
+          <div className="group relative aspect-square w-full overflow-hidden bg-neutral-100">
             <Image
               src={entry.photoUrl}
               alt={entry.petName}
               fill
               priority
               sizes="(min-width: 672px) 672px, 100vw"
-              className="object-cover"
+              className="object-cover transition-transform duration-500 group-hover:scale-105"
             />
           </div>
           <div className="p-6 text-center">
-            <h1 className="text-2xl font-semibold text-brand-primary-dark">{entry.petName}</h1>
+            <h1 className="text-4xl font-extrabold tracking-tight text-brand-primary-dark">{entry.petName}</h1>
             <p className="mt-1 text-sm text-neutral-500">Entered by {entry.ownerName}</p>
             {entry.caption && <p className="mt-4 text-neutral-700">{entry.caption}</p>}
 

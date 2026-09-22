@@ -3,7 +3,6 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { getLeaderboard, getContestTotals } from "@/lib/entries";
 import { goalProgress } from "@/lib/pricing";
-import { theme } from "@/lib/theme";
 import { Countdown } from "@/components/Countdown";
 
 export const dynamic = "force-dynamic";
@@ -34,13 +33,17 @@ export default async function LeaderboardPage() {
     <main className="flex-1 bg-brand-accent px-6 py-12">
       <div className="mx-auto max-w-4xl">
         <div className="mb-8 flex flex-col items-center gap-3 text-center">
-          <Image src={theme.logo.src} alt={theme.logo.alt} width={180} height={64} unoptimized className="h-12 w-auto" />
-          <h1 className="text-2xl font-semibold text-brand-primary-dark sm:text-3xl">{contest.name}</h1>
+          <h1 className="text-3xl font-extrabold tracking-tight text-brand-primary-dark sm:text-4xl">
+            {contest.name}
+          </h1>
           <p className="text-sm text-neutral-600">
             <Countdown endsAt={contest.endsAt.toISOString()} />
           </p>
-          <Link href="/gallery" className="text-sm font-medium text-brand-primary hover:underline">
-            ← Back to the gallery
+          <Link href="/gallery" className="group inline-flex items-center gap-1 text-sm font-medium text-brand-primary">
+            <span className="transition-transform duration-200 group-hover:-translate-x-1">←</span>
+            <span className="transition-colors duration-200 group-hover:text-brand-primary-dark">
+              Back to the gallery
+            </span>
           </Link>
         </div>
 
@@ -51,7 +54,7 @@ export default async function LeaderboardPage() {
           </div>
           <div className="h-4 w-full overflow-hidden rounded-full bg-neutral-100">
             <div
-              className="h-full rounded-full bg-brand-primary transition-all"
+              className="h-full rounded-full bg-brand-primary transition-all duration-700 ease-out"
               style={{ width: `${progress.percent}%` }}
             />
           </div>
@@ -71,15 +74,23 @@ export default async function LeaderboardPage() {
                 <li key={entry.id}>
                   <Link
                     href={`/pet/${entry.slug}`}
-                    className="flex items-center gap-4 rounded-lg border border-neutral-200 bg-white p-3 shadow-sm transition hover:shadow-md"
+                    className="group flex items-center gap-4 rounded-lg border border-neutral-200 bg-white p-3 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
                   >
-                    <span className="w-8 shrink-0 text-center text-lg font-semibold text-neutral-500">
+                    <span className="w-8 shrink-0 text-center text-lg font-semibold text-neutral-500 transition-transform duration-200 group-hover:scale-110">
                       {MEDAL[index] ?? index + 1}
                     </span>
                     <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-full bg-neutral-100">
-                      <Image src={entry.photoUrl} alt={entry.petName} fill sizes="56px" className="object-cover" />
+                      <Image
+                        src={entry.photoUrl}
+                        alt={entry.petName}
+                        fill
+                        sizes="56px"
+                        className="object-cover transition-transform duration-300 group-hover:scale-110"
+                      />
                     </div>
-                    <span className="flex-1 truncate font-medium text-neutral-900">{entry.petName}</span>
+                    <span className="flex-1 truncate text-base font-bold tracking-tight text-neutral-900 transition-colors duration-200 group-hover:text-brand-primary">
+                      {entry.petName}
+                    </span>
                     <span className="shrink-0 text-sm font-semibold text-brand-primary">
                       {entry.voteCount.toLocaleString()} votes
                     </span>
@@ -95,10 +106,12 @@ export default async function LeaderboardPage() {
                     <li key={entry.id}>
                       <Link
                         href={`/pet/${entry.slug}`}
-                        className="flex items-center gap-3 px-4 py-2 text-sm hover:bg-brand-accent"
+                        className="group flex items-center gap-3 px-4 py-2 text-sm transition-colors duration-150 hover:bg-brand-accent"
                       >
                         <span className="w-6 shrink-0 text-neutral-400">{index + 11}</span>
-                        <span className="flex-1 truncate text-neutral-800">{entry.petName}</span>
+                        <span className="flex-1 truncate font-semibold text-neutral-800 transition-colors duration-150 group-hover:text-brand-primary">
+                          {entry.petName}
+                        </span>
                         <span className="shrink-0 text-neutral-500">{entry.voteCount.toLocaleString()} votes</span>
                       </Link>
                     </li>

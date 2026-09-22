@@ -36,7 +36,7 @@ export function ShareButtons({ petName, pageUrl }: { petName: string; pageUrl: s
         href={facebookHref}
         target="_blank"
         rel="noopener noreferrer"
-        className="rounded-md bg-[#1877f2] px-4 py-2 text-sm font-medium text-white hover:opacity-90"
+        className="rounded-md bg-[#1877f2] px-4 py-2 text-sm font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:opacity-90 hover:shadow-md active:translate-y-0"
       >
         Share on Facebook
       </a>
@@ -44,7 +44,7 @@ export function ShareButtons({ petName, pageUrl }: { petName: string; pageUrl: s
         href={xHref}
         target="_blank"
         rel="noopener noreferrer"
-        className="rounded-md bg-black px-4 py-2 text-sm font-medium text-white hover:opacity-90"
+        className="rounded-md bg-black px-4 py-2 text-sm font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:opacity-90 hover:shadow-md active:translate-y-0"
       >
         Share on X
       </a>
@@ -52,7 +52,7 @@ export function ShareButtons({ petName, pageUrl }: { petName: string; pageUrl: s
         <button
           type="button"
           onClick={handleNativeShare}
-          className="rounded-md border border-brand-primary px-4 py-2 text-sm font-medium text-brand-primary hover:bg-brand-accent"
+          className="rounded-md border border-brand-primary px-4 py-2 text-sm font-medium text-brand-primary transition-all duration-200 hover:-translate-y-0.5 hover:bg-brand-accent hover:shadow-md active:translate-y-0"
         >
           More options
         </button>
@@ -60,7 +60,7 @@ export function ShareButtons({ petName, pageUrl }: { petName: string; pageUrl: s
       <button
         type="button"
         onClick={handleCopy}
-        className="rounded-md border border-neutral-300 px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50"
+        className="rounded-md border border-neutral-300 px-4 py-2 text-sm font-medium text-neutral-700 transition-all duration-200 hover:-translate-y-0.5 hover:bg-neutral-50 hover:shadow-md active:translate-y-0"
       >
         {copied ? "Link copied!" : "Copy link"}
       </button>

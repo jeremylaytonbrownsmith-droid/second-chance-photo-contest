@@ -28,13 +28,20 @@ export default async function GalleryPage({
     <main className="flex-1 bg-brand-accent px-6 py-12">
       <div className="mx-auto max-w-6xl">
         <div className="mb-8 flex flex-col items-center gap-3 text-center">
-          <Image src={theme.logo.src} alt={theme.logo.alt} width={180} height={64} unoptimized className="h-12 w-auto" />
-          <h1 className="text-2xl font-semibold text-brand-primary-dark sm:text-3xl">Pet Photo Gallery</h1>
+          <h1 className="text-3xl font-extrabold tracking-tight text-brand-primary-dark sm:text-4xl">
+            Pet Photo Gallery
+          </h1>
           <p className="max-w-lg text-sm text-neutral-600">
             Browse every entry and cast your vote. Each vote helps {theme.org.name} raise funds for pets in need.
           </p>
-          <Link href="/leaderboard" className="text-sm font-medium text-brand-primary hover:underline">
-            View the leaderboard →
+          <Link
+            href="/leaderboard"
+            className="group inline-flex items-center gap-1 text-sm font-medium text-brand-primary"
+          >
+            <span className="transition-colors duration-200 group-hover:text-brand-primary-dark">
+              View the leaderboard
+            </span>
+            <span className="transition-transform duration-200 group-hover:translate-x-1">→</span>
           </Link>
         </div>
 
@@ -44,12 +51,12 @@ export default async function GalleryPage({
             name="q"
             defaultValue={q ?? ""}
             placeholder="Search by pet or owner name"
-            className="w-64 rounded-md border border-neutral-300 px-3 py-2 text-sm focus:border-brand-primary focus:outline-none"
+            className="w-64 rounded-md border border-neutral-300 px-3 py-2 text-sm transition-colors duration-150 focus:border-brand-primary focus:outline-none"
           />
           <select
             name="sort"
             defaultValue={sort}
-            className="rounded-md border border-neutral-300 px-3 py-2 text-sm focus:border-brand-primary focus:outline-none"
+            className="rounded-md border border-neutral-300 px-3 py-2 text-sm transition-colors duration-150 focus:border-brand-primary focus:outline-none"
           >
             <option value="newest">Newest</option>
             <option value="votes">Most votes</option>
@@ -57,7 +64,7 @@ export default async function GalleryPage({
           </select>
           <button
             type="submit"
-            className="rounded-md bg-brand-primary px-4 py-2 text-sm font-medium text-white hover:bg-brand-primary-dark"
+            className="rounded-md bg-brand-primary px-4 py-2 text-sm font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-brand-primary-dark hover:shadow-md active:translate-y-0"
           >
             Apply
           </button>
@@ -73,7 +80,7 @@ export default async function GalleryPage({
               <Link
                 key={entry.id}
                 href={`/pet/${entry.slug}`}
-                className="group overflow-hidden rounded-lg border border-neutral-200 bg-white shadow-sm transition hover:shadow-md"
+                className="group overflow-hidden rounded-lg border border-neutral-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
               >
                 <div className="relative aspect-square w-full overflow-hidden bg-neutral-100">
                   <Image
@@ -81,12 +88,14 @@ export default async function GalleryPage({
                     alt={entry.petName}
                     fill
                     sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw"
-                    className="object-cover transition group-hover:scale-105"
+                    className="object-cover transition-transform duration-300 group-hover:scale-110"
                   />
                 </div>
                 <div className="p-3">
-                  <p className="truncate font-medium text-neutral-900">{entry.petName}</p>
-                  <p className="text-xs text-neutral-500">{entry.voteCount.toLocaleString()} votes</p>
+                  <p className="truncate text-base font-bold tracking-tight text-neutral-900 transition-colors duration-200 group-hover:text-brand-primary">
+                    {entry.petName}
+                  </p>
+                  <p className="text-xs font-medium text-neutral-500">{entry.voteCount.toLocaleString()} votes</p>
                 </div>
               </Link>
             ))}

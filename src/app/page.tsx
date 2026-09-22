@@ -37,15 +37,6 @@ export default async function HomePage() {
       {/* Hero */}
       <section className="px-6 pb-12 pt-16 text-center">
         <div className="mx-auto flex max-w-2xl flex-col items-center gap-4">
-          <Image
-            src={theme.logo.src}
-            alt={theme.logo.alt}
-            width={220}
-            height={78}
-            priority
-            unoptimized
-            className="h-14 w-auto"
-          />
           <h1 className="text-5xl font-extrabold tracking-tight text-brand-primary-dark sm:text-6xl">
             Pet Photo Contest
           </h1>
@@ -56,13 +47,13 @@ export default async function HomePage() {
           <div className="mt-2 flex flex-wrap items-center justify-center gap-3">
             <Link
               href="/gallery"
-              className="rounded-md bg-brand-primary px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-brand-primary-dark"
+              className="rounded-md bg-brand-primary px-6 py-3 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-brand-primary-dark hover:shadow-md active:translate-y-0"
             >
               Vote for a pet
             </Link>
             <Link
               href="/leaderboard"
-              className="rounded-md border border-brand-primary bg-white px-6 py-3 text-sm font-semibold text-brand-primary hover:bg-brand-accent"
+              className="rounded-md border border-brand-primary bg-white px-6 py-3 text-sm font-semibold text-brand-primary transition-all duration-200 hover:-translate-y-0.5 hover:bg-brand-accent hover:shadow-md active:translate-y-0"
             >
               See the leaderboard
             </Link>
@@ -84,7 +75,7 @@ export default async function HomePage() {
               </div>
               <div className="h-4 w-full overflow-hidden rounded-full bg-neutral-100">
                 <div
-                  className="h-full rounded-full bg-brand-primary transition-all"
+                  className="h-full rounded-full bg-brand-primary transition-all duration-700 ease-out"
                   style={{ width: `${progress?.percent ?? 0}%` }}
                 />
               </div>
@@ -106,7 +97,7 @@ export default async function HomePage() {
                     <Link
                       key={entry.id}
                       href={`/pet/${entry.slug}`}
-                      className="group overflow-hidden rounded-lg border border-neutral-200 bg-white shadow-sm transition hover:shadow-md"
+                      className="group overflow-hidden rounded-lg border border-neutral-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
                     >
                       <div className="relative aspect-square w-full overflow-hidden bg-neutral-100">
                         <Image
@@ -115,19 +106,29 @@ export default async function HomePage() {
                           fill
                           priority={index === 0}
                           sizes="(min-width: 640px) 25vw, 50vw"
-                          className="object-cover transition group-hover:scale-105"
+                          className="object-cover transition-transform duration-300 group-hover:scale-110"
                         />
                       </div>
-                      <div className="p-2 text-center">
-                        <p className="truncate text-sm font-medium text-neutral-900">{entry.petName}</p>
-                        <p className="text-xs text-neutral-500">{entry.voteCount.toLocaleString()} votes</p>
+                      <div className="p-3 text-center">
+                        <p className="truncate text-base font-bold tracking-tight text-neutral-900 transition-colors duration-200 group-hover:text-brand-primary">
+                          {entry.petName}
+                        </p>
+                        <p className="text-xs font-medium text-neutral-500">
+                          {entry.voteCount.toLocaleString()} votes
+                        </p>
                       </div>
                     </Link>
                   ))}
                 </div>
                 <div className="mt-6 text-center">
-                  <Link href="/gallery" className="text-sm font-medium text-brand-primary hover:underline">
-                    See every entry →
+                  <Link
+                    href="/gallery"
+                    className="group inline-flex items-center gap-1 text-sm font-medium text-brand-primary"
+                  >
+                    <span className="transition-colors duration-200 group-hover:text-brand-primary-dark">
+                      See every entry
+                    </span>
+                    <span className="transition-transform duration-200 group-hover:translate-x-1">→</span>
                   </Link>
                 </div>
               </div>
@@ -136,7 +137,7 @@ export default async function HomePage() {
 
           {contest.prizeText && (
             <section className="px-6 pb-14">
-              <div className="mx-auto max-w-2xl rounded-xl bg-brand-primary px-6 py-8 text-center text-white">
+              <div className="mx-auto max-w-2xl rounded-xl bg-brand-primary px-6 py-8 text-center text-white shadow-sm transition-shadow duration-300 hover:shadow-lg">
                 <p className="text-sm font-semibold uppercase tracking-wide text-brand-secondary">Grand Prize</p>
                 <p className="mt-2 text-lg">{contest.prizeText}</p>
               </div>
@@ -151,8 +152,8 @@ export default async function HomePage() {
           <h2 className="mb-8 text-center text-xl font-semibold text-brand-primary-dark">How it works</h2>
           <div className="grid gap-6 sm:grid-cols-3">
             {STEPS.map((step, index) => (
-              <div key={step.title} className="text-center">
-                <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-brand-primary text-sm font-bold text-white">
+              <div key={step.title} className="group text-center">
+                <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-brand-primary text-sm font-bold text-white transition-transform duration-200 group-hover:scale-110">
                   {index + 1}
                 </div>
                 <h3 className="mb-1 font-semibold text-neutral-900">{step.title}</h3>
