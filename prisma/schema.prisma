@@ -8,8 +8,14 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  // Migrations need a direct (non-pgbouncer) connection — pooled
+  // connections in transaction mode don't support the session-level
+  // advisory lock `prisma migrate deploy` takes, which times out with
+  // P1002 otherwise. Only `prisma migrate`/`introspect` use this; the
+  // runtime query engine still uses the pooled `url` above.
+  directUrl = env("DIRECT_DATABASE_URL")
 }
 
 // ---------------------------------------------------------------------------

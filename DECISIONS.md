@@ -57,7 +57,20 @@ guessed at in code — build around it, flag it, wait for the answer.
 
 ## Prize fulfillment
 
-- The winning pet's custom beer-can rendering is a production/vendor
-  process outside this app's scope. The app only needs admin-editable
-  prize text/image fields (built) — confirm who owns the actual can
-  production workflow once a winner is picked.
+- The winning pet's photo is turned into a painted portrait and featured on
+  a specially brewed, limited-edition beer — both the portrait commission
+  and the beer production are vendor processes outside this app's scope.
+  The app only needs admin-editable prize text/image fields (built) —
+  confirm who owns the portrait and brewing workflow once a winner is
+  picked.
+
+## Temporary: moderation is OFF on the demo contest
+
+- `Contest.moderationEnabled` defaults to `true` in the schema (entries
+  should sit in `PENDING` for admin review before going public), but the
+  admin moderation queue (Phase 5) doesn't exist yet — a `PENDING` entry
+  would never surface anywhere. The seed script sets the demo contest's
+  `moderationEnabled` to `false` so a real submission through `/enter`
+  shows up immediately after payment, for demo purposes. **Turn this back
+  on** (or just stop overriding it) once the admin approve/reject UI ships,
+  so real entries get reviewed before they're public.

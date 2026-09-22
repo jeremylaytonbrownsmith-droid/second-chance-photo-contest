@@ -9,6 +9,7 @@ const NAV_LINKS = [
   { href: "/", label: "Home" },
   { href: "/gallery", label: "Gallery" },
   { href: "/leaderboard", label: "Leaderboard" },
+  { href: "/enter", label: "Enter Your Pet" },
 ];
 
 export function Nav() {

@@ -63,15 +63,23 @@ const SEED_ENTRIES: SeedEntry[] = [
 ];
 
 async function main() {
+  const prizeText =
+    "Every entry raises money for Second Chance Pet Adoptions. The grand-prize winner's pet gets turned into a painted portrait and featured on a specially brewed, limited-edition beer.";
+
   const contest = await prisma.contest.upsert({
     where: { id: "demo-contest" },
-    update: {},
+    // moderationEnabled: false is a temporary demo setting — the admin
+    // moderation queue (Phase 5) doesn't exist yet, so a PENDING entry
+    // would never surface. Flip this back on once that UI ships (see
+    // DECISIONS.md).
+    update: { prizeText, moderationEnabled: false },
     create: {
       id: "demo-contest",
       name: "2026 Second Chance Pet Photo Contest",
       startsAt: new Date(),
       endsAt: new Date(Date.now() + 21 * 24 * 60 * 60 * 1000),
-      prizeText: "Grand prize winner gets their pet's photo on a limited-edition Second Chance beer can.",
+      prizeText,
+      moderationEnabled: false,
     },
   });
 

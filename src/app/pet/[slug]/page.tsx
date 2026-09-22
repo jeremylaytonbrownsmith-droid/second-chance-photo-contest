@@ -38,8 +38,15 @@ export async function generateMetadata({
   };
 }
 
-export default async function PetPage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function PetPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<{ entered?: string }>;
+}) {
   const { slug } = await params;
+  const { entered } = await searchParams;
   const entry = await loadEntry(slug);
   if (!entry) notFound();
 
@@ -49,6 +56,11 @@ export default async function PetPage({ params }: { params: Promise<{ slug: stri
   return (
     <main className="flex-1 bg-brand-accent px-6 py-12">
       <div className="mx-auto max-w-2xl">
+        {entered === "1" && (
+          <p className="mb-6 rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-center text-sm text-emerald-800">
+            🎉 You&apos;re entered! Share this page to start collecting votes.
+          </p>
+        )}
         <div className="mb-6 flex flex-col items-center gap-2 text-center">
           <Link href="/gallery" className="group inline-flex items-center gap-1 text-sm font-medium text-brand-primary">
             <span className="transition-transform duration-200 group-hover:-translate-x-1">←</span>

@@ -19,7 +19,7 @@ const STEPS = [
   },
   {
     title: "Win prizes",
-    body: "Top pets win prizes, including a spot on a limited-edition Second Chance beer can.",
+    body: "Every vote raises money for Second Chance. The winning pet's photo becomes a painted portrait, featured on a specially brewed, limited-edition beer.",
   },
 ];
 
@@ -41,24 +41,34 @@ export default async function HomePage() {
             Pet Photo Contest
           </h1>
           <p className="max-w-lg text-lg text-neutral-600">
-            Vote for your favorite pets and help {theme.org.name} raise funds for pets in need — every vote is a
-            donation.
+            Enter your pet or vote for your favorites — help {theme.org.name} raise funds for pets in need. Every
+            entry and every vote is a donation.
           </p>
           <div className="mt-2 flex flex-wrap items-center justify-center gap-3">
             <Link
-              href="/gallery"
+              href="/enter"
               className="rounded-md bg-brand-primary px-6 py-3 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-brand-primary-dark hover:shadow-md active:translate-y-0"
+            >
+              Enter your pet
+            </Link>
+            <Link
+              href="/gallery"
+              className="rounded-md border border-brand-primary bg-white px-6 py-3 text-sm font-semibold text-brand-primary transition-all duration-200 hover:-translate-y-0.5 hover:bg-brand-accent hover:shadow-md active:translate-y-0"
             >
               Vote for a pet
             </Link>
+          </div>
+          {contest ? (
             <Link
               href="/leaderboard"
-              className="rounded-md border border-brand-primary bg-white px-6 py-3 text-sm font-semibold text-brand-primary transition-all duration-200 hover:-translate-y-0.5 hover:bg-brand-accent hover:shadow-md active:translate-y-0"
+              className="group mt-1 inline-flex items-center gap-1 text-sm font-medium text-brand-primary"
             >
-              See the leaderboard
+              <span className="transition-colors duration-200 group-hover:text-brand-primary-dark">
+                See the leaderboard
+              </span>
+              <span className="transition-transform duration-200 group-hover:translate-x-1">→</span>
             </Link>
-          </div>
-          {!contest && (
+          ) : (
             <p className="mt-4 text-xs text-neutral-400">Entry submissions open soon — check back for contest details.</p>
           )}
         </div>
@@ -151,15 +161,26 @@ export default async function HomePage() {
         <div className="mx-auto max-w-4xl">
           <h2 className="mb-8 text-center text-xl font-semibold text-brand-primary-dark">How it works</h2>
           <div className="grid gap-6 sm:grid-cols-3">
-            {STEPS.map((step, index) => (
-              <div key={step.title} className="group text-center">
-                <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-brand-primary text-sm font-bold text-white transition-transform duration-200 group-hover:scale-110">
-                  {index + 1}
+            {STEPS.map((step, index) => {
+              const content = (
+                <>
+                  <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-brand-primary text-sm font-bold text-white transition-transform duration-200 group-hover:scale-110">
+                    {index + 1}
+                  </div>
+                  <h3 className="mb-1 font-semibold text-neutral-900">{step.title}</h3>
+                  <p className="text-sm text-neutral-600">{step.body}</p>
+                </>
+              );
+              return index === 0 ? (
+                <Link key={step.title} href="/enter" className="group rounded-lg text-center transition-colors">
+                  {content}
+                </Link>
+              ) : (
+                <div key={step.title} className="group text-center">
+                  {content}
                 </div>
-                <h3 className="mb-1 font-semibold text-neutral-900">{step.title}</h3>
-                <p className="text-sm text-neutral-600">{step.body}</p>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>
