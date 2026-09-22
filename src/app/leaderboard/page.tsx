@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { getLeaderboard, getContestTotals } from "@/lib/entries";
 import { goalProgress } from "@/lib/pricing";
 import { theme } from "@/lib/theme";
-import { Countdown } from "./countdown";
+import { Countdown } from "@/components/Countdown";
 
 export const dynamic = "force-dynamic";
 
