@@ -28,7 +28,7 @@ export default async function GalleryPage({
     <main className="flex-1 bg-brand-accent px-6 py-12">
       <div className="mx-auto max-w-6xl">
         <div className="mb-8 flex flex-col items-center gap-3 text-center">
-          <Image src={theme.logo.src} alt={theme.logo.alt} width={180} height={64} className="h-12 w-auto" />
+          <Image src={theme.logo.src} alt={theme.logo.alt} width={180} height={64} unoptimized className="h-12 w-auto" />
           <h1 className="text-2xl font-semibold text-brand-primary-dark sm:text-3xl">Pet Photo Gallery</h1>
           <p className="max-w-lg text-sm text-neutral-600">
             Browse every entry and cast your vote. Each vote helps {theme.org.name} raise funds for pets in need.

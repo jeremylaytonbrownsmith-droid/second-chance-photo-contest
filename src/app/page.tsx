@@ -37,9 +37,19 @@ export default async function HomePage() {
       {/* Hero */}
       <section className="px-6 pb-12 pt-16 text-center">
         <div className="mx-auto flex max-w-2xl flex-col items-center gap-4">
-          <Image src={theme.logo.src} alt={theme.logo.alt} width={220} height={78} priority className="h-16 w-auto" />
-          <h1 className="text-3xl font-bold text-brand-primary-dark sm:text-4xl">Pet Photo Contest</h1>
-          <p className="max-w-lg text-neutral-600">
+          <Image
+            src={theme.logo.src}
+            alt={theme.logo.alt}
+            width={220}
+            height={78}
+            priority
+            unoptimized
+            className="h-14 w-auto"
+          />
+          <h1 className="text-5xl font-extrabold tracking-tight text-brand-primary-dark sm:text-6xl">
+            Pet Photo Contest
+          </h1>
+          <p className="max-w-lg text-lg text-neutral-600">
             Vote for your favorite pets and help {theme.org.name} raise funds for pets in need — every vote is a
             donation.
           </p>

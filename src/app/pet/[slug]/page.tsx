@@ -50,7 +50,7 @@ export default async function PetPage({ params }: { params: Promise<{ slug: stri
     <main className="flex-1 bg-brand-accent px-6 py-12">
       <div className="mx-auto max-w-2xl">
         <div className="mb-6 flex flex-col items-center gap-2 text-center">
-          <Image src={theme.logo.src} alt={theme.logo.alt} width={160} height={56} className="h-10 w-auto" />
+          <Image src={theme.logo.src} alt={theme.logo.alt} width={160} height={56} unoptimized className="h-10 w-auto" />
           <Link href="/gallery" className="text-sm font-medium text-brand-primary hover:underline">
             ← Back to the gallery
           </Link>

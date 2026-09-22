@@ -52,6 +52,14 @@ const SEED_ENTRIES: SeedEntry[] = [
     caption: "Whiskers holding down the good armchair, as always.",
     votePurchases: [15, 40, 10, 5],
   },
+  {
+    photoUrl: "/demo/luna.jpg",
+    petName: "Luna",
+    ownerName: "Sarah Kimball",
+    ownerEmail: "sarah.kimball@example.com",
+    caption: "Luna striking a pose on freshly made sheets.",
+    votePurchases: [30, 45, 20, 15, 10],
+  },
 ];
 
 async function main() {
