@@ -68,18 +68,18 @@ async function main() {
 
   const contest = await prisma.contest.upsert({
     where: { id: "demo-contest" },
-    // moderationEnabled: false is a temporary demo setting — the admin
-    // moderation queue (Phase 5) doesn't exist yet, so a PENDING entry
-    // would never surface. Flip this back on once that UI ships (see
-    // DECISIONS.md).
-    update: { prizeText, moderationEnabled: false },
+    // Explicit even in `update` — a prior deploy set moderationEnabled to
+    // false as a temporary demo workaround (see DECISIONS.md history);
+    // omitting the field here would leave that stale value in place on an
+    // already-seeded database instead of correcting it. Real submissions
+    // sit in PENDING until an admin approves them at /admin/moderation.
+    update: { prizeText, moderationEnabled: true },
     create: {
       id: "demo-contest",
       name: "2026 Second Chance Pet Photo Contest",
       startsAt: new Date(),
       endsAt: new Date(Date.now() + 21 * 24 * 60 * 60 * 1000),
       prizeText,
-      moderationEnabled: false,
     },
   });
 

@@ -64,13 +64,13 @@ guessed at in code — build around it, flag it, wait for the answer.
   confirm who owns the portrait and brewing workflow once a winner is
   picked.
 
-## Temporary: moderation is OFF on the demo contest
+## Admin login
 
-- `Contest.moderationEnabled` defaults to `true` in the schema (entries
-  should sit in `PENDING` for admin review before going public), but the
-  admin moderation queue (Phase 5) doesn't exist yet — a `PENDING` entry
-  would never surface anywhere. The seed script sets the demo contest's
-  `moderationEnabled` to `false` so a real submission through `/enter`
-  shows up immediately after payment, for demo purposes. **Turn this back
-  on** (or just stop overriding it) once the admin approve/reject UI ships,
-  so real entries get reviewed before they're public.
+- No signup flow, by design — the one AdminUser is created by setting
+  `ADMIN_EMAIL`/`ADMIN_PASSWORD` in the deploy environment (safe to leave
+  set permanently; see `.env.example`). Moderation queue lives at
+  `/admin/moderation`. `moderationEnabled` is back to the schema default
+  (`true`) now that the queue exists — a submitted entry sits in `PENDING`
+  until an admin approves or rejects it there.
+- Only covers approve/reject so far. Fraud tooling, the Raiser's Edge NXT
+  CSV export, and winner-selection/email are still unbuilt.

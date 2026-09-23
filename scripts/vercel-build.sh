@@ -37,6 +37,11 @@ fi
 
 npx prisma migrate deploy
 
+# Idempotent — no-ops unless ADMIN_EMAIL/ADMIN_PASSWORD are set, and just
+# resets the password if they change. There's no signup flow by design;
+# this is the only way an AdminUser gets created for the moderation queue.
+npm run create-admin:build
+
 if [ "$RUN_SEED_ON_BUILD" = "true" ]; then
   npm run seed:build
 fi
