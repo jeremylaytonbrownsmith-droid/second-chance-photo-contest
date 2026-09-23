@@ -5,15 +5,17 @@ A fundraising pet photo contest app for Second Chance Pet Adoptions
 nonprofit so they keep the platform fees. Standalone from the org's other
 apps — see `CLAUDE.md` for the isolation rule.
 
-Status: **Phase 1 (foundation) in progress.** Entries, the public gallery,
-voting, the leaderboard, and the admin dashboard are not built yet — see
-the phase list below.
+Status: **Entries, the public gallery, voting, the leaderboard, and
+sharing are built and live on a test deploy.** Still to do: the admin
+dashboard, a real (non-mock) payment processor, and a webhook to make
+payment confirmation reliable — see `DECISIONS.md`.
 
 ## Stack
 
 - Next.js (App Router) + TypeScript
 - PostgreSQL (Neon) via Prisma
-- Cloudflare R2 for pet photo storage
+- Configurable pet photo storage — local disk for dev, Cloudflare R2 or
+  Bunny.net Storage in production (see "Switching storage providers")
 - `@vercel/og` for dynamic Open Graph / share images
 - Stripe (test mode) and a mock provider behind a `PaymentProvider`
   interface — Blackbaud Merchant Services (BBMS) is the production target,
@@ -51,6 +53,22 @@ the `PAYMENT_PROVIDER` env var:
   `PaymentProvider` interface and a `case "bbms"` in
   `src/lib/payments/index.ts`. Nothing else in the app should need to
   change.
+
+## Switching storage providers
+
+Same pattern as payments — the app only talks to
+`src/lib/storage/provider.ts`'s `StorageProvider` interface, selected by
+`STORAGE_PROVIDER`:
+
+- `local` (default) — writes to `public/uploads`. No account needed, but
+  files don't survive a redeploy on Vercel — dev/demo only.
+- `r2` — Cloudflare R2 (S3-compatible). Needs `R2_ACCOUNT_ID`,
+  `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME`,
+  `R2_PUBLIC_URL`.
+- `bunny` — Bunny.net Storage (its own REST API, not S3-compatible). Needs
+  `BUNNY_STORAGE_ZONE`, `BUNNY_STORAGE_API_KEY`, `BUNNY_PULL_ZONE_URL` (the
+  Pull Zone/CDN hostname in front of the storage zone — not the storage API
+  host). `BUNNY_STORAGE_REGION` is optional.
 
 ## Testing
 

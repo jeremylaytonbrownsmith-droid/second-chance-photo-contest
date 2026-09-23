@@ -1,6 +1,7 @@
 import type { StorageProvider } from "./provider";
 import { LocalStorageProvider } from "./local-provider";
 import { R2StorageProvider } from "./r2-provider";
+import { BunnyStorageProvider } from "./bunny-provider";
 
 export type { StorageProvider, UploadInput, UploadResult } from "./provider";
 
@@ -13,11 +14,14 @@ export function getStorageProvider(): StorageProvider {
     case "r2":
       cached = new R2StorageProvider();
       break;
+    case "bunny":
+      cached = new BunnyStorageProvider();
+      break;
     case "local":
       cached = new LocalStorageProvider();
       break;
     default:
-      throw new Error(`Unknown STORAGE_PROVIDER "${configured}" — expected "local" or "r2"`);
+      throw new Error(`Unknown STORAGE_PROVIDER "${configured}" — expected "local", "r2", or "bunny"`);
   }
   return cached;
 }
