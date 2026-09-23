@@ -1,10 +1,11 @@
 import Image from "next/image";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import { getLeaderboard, getContestTotals } from "@/lib/entries";
+import { getLeaderboard, getContestTotals, getRecentActivity } from "@/lib/entries";
 import { goalProgress } from "@/lib/pricing";
 import { theme } from "@/lib/theme";
 import { Countdown } from "@/components/Countdown";
+import { formatRelativeTime } from "@/lib/format-relative-time";
 
 export const dynamic = "force-dynamic";
 
@@ -26,9 +27,9 @@ const STEPS = [
 export default async function HomePage() {
   const contest = await prisma.contest.findFirst({ orderBy: { startsAt: "desc" } });
 
-  const [topEntries, totals] = contest
-    ? await Promise.all([getLeaderboard(contest.id, 4), getContestTotals(contest.id)])
-    : [[], { raisedCents: 0 }];
+  const [topEntries, totals, recentActivity] = contest
+    ? await Promise.all([getLeaderboard(contest.id, 4), getContestTotals(contest.id), getRecentActivity(contest.id)])
+    : [[], { raisedCents: 0 }, []];
 
   const progress = contest ? goalProgress(totals.raisedCents, contest.goalCents) : null;
 
@@ -118,6 +119,9 @@ export default async function HomePage() {
                           sizes="(min-width: 640px) 25vw, 50vw"
                           className="object-cover transition-transform duration-300 group-hover:scale-110"
                         />
+                        <span className="absolute left-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-brand-primary text-xs font-bold text-white shadow-sm">
+                          {index + 1}
+                        </span>
                       </div>
                       <div className="p-3 text-center">
                         <p className="truncate text-base font-bold tracking-tight text-neutral-900 transition-colors duration-200 group-hover:text-brand-primary">
@@ -140,6 +144,50 @@ export default async function HomePage() {
                     </span>
                     <span className="transition-transform duration-200 group-hover:translate-x-1">→</span>
                   </Link>
+                </div>
+              </div>
+            </section>
+          )}
+
+          {recentActivity.length > 0 && (
+            <section className="px-6 pb-14">
+              <div className="mx-auto max-w-2xl">
+                <h2 className="mb-6 text-center text-xl font-semibold text-brand-primary-dark">Recent activity</h2>
+                <div className="divide-y divide-neutral-100 overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-sm">
+                  {recentActivity.map((activity) => (
+                    <Link
+                      key={activity.id}
+                      href={`/pet/${activity.entry.slug}`}
+                      className="group flex items-center gap-3 px-4 py-3 transition-colors duration-150 hover:bg-brand-accent"
+                    >
+                      <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full bg-neutral-100">
+                        <Image
+                          src={activity.entry.photoUrl}
+                          alt={activity.entry.petName}
+                          fill
+                          sizes="40px"
+                          className="object-cover"
+                        />
+                      </div>
+                      <p className="min-w-0 flex-1 truncate text-sm text-neutral-700">
+                        <span className="font-semibold text-neutral-900 transition-colors duration-150 group-hover:text-brand-primary">
+                          {activity.donorName}
+                        </span>{" "}
+                        {activity.type === "ENTRY_FEE" ? (
+                          <>entered <span className="font-medium">{activity.entry.petName}</span></>
+                        ) : (
+                          <>
+                            gave <span className="font-medium">{activity.voteQuantity}</span>{" "}
+                            {activity.voteQuantity === 1 ? "vote" : "votes"} to{" "}
+                            <span className="font-medium">{activity.entry.petName}</span>
+                          </>
+                        )}
+                      </p>
+                      <span className="shrink-0 text-xs text-neutral-400">
+                        {formatRelativeTime(activity.createdAt)}
+                      </span>
+                    </Link>
+                  ))}
                 </div>
               </div>
             </section>

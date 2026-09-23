@@ -106,6 +106,47 @@ function shuffle<T>(items: T[]): T[] {
   return copy;
 }
 
+export interface RecentActivityItem {
+  id: string;
+  donorName: string;
+  type: "VOTE_PURCHASE" | "ENTRY_FEE";
+  voteQuantity: number | null;
+  createdAt: Date;
+  entry: { petName: string; slug: string; photoUrl: string };
+}
+
+/** Recent successful votes/entries for the homepage activity feed — social
+ * proof, same idea as GoGo Photo Contest's "Recent Donations." Scoped to
+ * APPROVED entries only, so a transaction on a still-PENDING entry (paid
+ * but not yet moderated) never leaks that pet's name/photo publicly ahead
+ * of approval. */
+export async function getRecentActivity(contestId: string, limit = 6): Promise<RecentActivityItem[]> {
+  const transactions = await prisma.transaction.findMany({
+    where: {
+      contestId,
+      status: "SUCCEEDED",
+      type: { in: ["VOTE_PURCHASE", "ENTRY_FEE"] },
+      entry: { status: "APPROVED", voidedAt: null },
+    },
+    orderBy: { createdAt: "desc" },
+    take: limit,
+    include: { entry: { select: { petName: true, slug: true, photoUrl: true } } },
+  });
+
+  return transactions
+    .filter((transaction): transaction is typeof transaction & { entry: NonNullable<typeof transaction.entry> } =>
+      Boolean(transaction.entry),
+    )
+    .map((transaction) => ({
+      id: transaction.id,
+      donorName: transaction.donorName,
+      type: transaction.type as "VOTE_PURCHASE" | "ENTRY_FEE",
+      voteQuantity: transaction.voteQuantity,
+      createdAt: transaction.createdAt,
+      entry: transaction.entry,
+    }));
+}
+
 /** Recomputes Entry.voteCount from source-of-truth rows (successful
  * VOTE_PURCHASE transactions + FreeVoteLog). Call after any vote-affecting
  * write instead of incrementing the cache by hand, so it can never drift. */
