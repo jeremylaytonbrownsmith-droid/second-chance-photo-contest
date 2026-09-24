@@ -36,8 +36,33 @@ export default async function HomePage() {
   return (
     <main className="flex-1 bg-brand-accent">
       {/* Hero */}
-      <section className="px-6 pb-12 pt-16 text-center">
-        <div className="mx-auto flex max-w-2xl flex-col items-center gap-4">
+      <section className="relative overflow-hidden px-6 pb-12 pt-16 text-center">
+        {topEntries.length > 0 && (
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 hidden sm:block"
+          >
+            {topEntries.map((entry, index) => {
+              const positions = [
+                "left-[3%] top-[8%] -rotate-6",
+                "right-[4%] top-[4%] rotate-6",
+                "left-[8%] bottom-[6%] rotate-3",
+                "right-[7%] bottom-[10%] -rotate-3",
+              ];
+              return (
+                <div
+                  key={entry.id}
+                  className={`absolute h-28 w-28 rounded-sm bg-white p-2 shadow-lg lg:h-36 lg:w-36 ${positions[index]}`}
+                >
+                  <div className="relative h-full w-full overflow-hidden">
+                    <Image src={entry.photoUrl} alt="" fill sizes="144px" className="object-cover" />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+        <div className="relative z-10 mx-auto flex max-w-2xl flex-col items-center gap-4 rounded-2xl px-4 py-6 sm:bg-brand-accent/90 sm:backdrop-blur-sm">
           <h1 className="text-5xl font-extrabold tracking-tight text-brand-primary-dark sm:text-6xl">
             Pet Photo Contest
           </h1>
