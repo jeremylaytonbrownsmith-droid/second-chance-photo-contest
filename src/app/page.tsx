@@ -194,23 +194,23 @@ export default async function HomePage() {
                           className="object-cover"
                         />
                       </div>
-                      <p className="min-w-0 flex-1 truncate text-sm text-neutral-700">
-                        <span className="font-semibold text-neutral-900 transition-colors duration-150 group-hover:text-brand-primary">
-                          {activity.donorName}
-                        </span>{" "}
-                        {activity.type === "ENTRY_FEE" ? (
-                          <>entered <span className="font-medium">{activity.entry.petName}</span></>
-                        ) : (
-                          <>
-                            gave <span className="font-medium">{activity.voteQuantity}</span>{" "}
-                            {activity.voteQuantity === 1 ? "vote" : "votes"} to{" "}
-                            <span className="font-medium">{activity.entry.petName}</span>
-                          </>
-                        )}
-                      </p>
-                      <span className="shrink-0 text-xs text-neutral-400">
-                        {formatRelativeTime(activity.createdAt)}
-                      </span>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm text-neutral-700">
+                          <span className="font-semibold text-neutral-900 transition-colors duration-150 group-hover:text-brand-primary">
+                            {activity.donorName}
+                          </span>{" "}
+                          {activity.type === "ENTRY_FEE" ? (
+                            <>entered <span className="font-medium">{activity.entry.petName}</span></>
+                          ) : (
+                            <>
+                              gave <span className="font-medium">{activity.voteQuantity}</span>{" "}
+                              {activity.voteQuantity === 1 ? "vote" : "votes"} to{" "}
+                              <span className="font-medium">{activity.entry.petName}</span>
+                            </>
+                          )}
+                        </p>
+                        <p className="mt-0.5 text-xs text-neutral-400">{formatRelativeTime(activity.createdAt)}</p>
+                      </div>
                     </Link>
                   ))}
                 </div>

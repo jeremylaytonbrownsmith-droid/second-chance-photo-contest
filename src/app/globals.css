@@ -28,3 +28,17 @@ body {
   color: var(--foreground);
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
 }
+
+/* iOS Safari auto-zooms the whole page when a focused form field's font
+   is under 16px — jarring on a phone, and most of our inputs use
+   text-sm (14px) for their on-screen size. Bumping just the effective
+   font-size on focus (mobile only, so desktop's intentional text-sm
+   sizing is untouched) prevents the zoom without changing how anything
+   looks day to day. */
+@media (max-width: 640px) {
+  input,
+  textarea,
+  select {
+    font-size: 16px;
+  }
+}

@@ -23,17 +23,17 @@ export default async function ModerationPage({
   return (
     <main className="flex-1 bg-neutral-100 px-6 py-10">
       <div className="mx-auto max-w-3xl">
-        <div className="mb-8 flex items-center justify-between">
-          <div>
+        <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="min-w-0">
             <h1 className="text-2xl font-bold text-neutral-900">Moderation queue</h1>
-            <p className="text-sm text-neutral-500">
+            <p className="truncate text-sm text-neutral-500">
               Signed in as {admin.email} · {pending.length} pending
             </p>
           </div>
-          <form action="/api/admin/logout" method="POST">
+          <form action="/api/admin/logout" method="POST" className="shrink-0">
             <button
               type="submit"
-              className="rounded-md border border-neutral-300 px-3 py-1.5 text-sm font-medium text-neutral-600 transition-colors duration-150 hover:bg-white"
+              className="whitespace-nowrap rounded-md border border-neutral-300 px-3 py-1.5 text-sm font-medium text-neutral-600 transition-colors duration-150 hover:bg-white"
             >
               Sign out
             </button>
