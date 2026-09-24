@@ -17,8 +17,8 @@ const entrySchema = z.object({
 
 /** Entry submission — creates a PENDING Entry + ENTRY_FEE Transaction, then
  * redirects to the payment provider's hosted checkout. Nothing here marks
- * the entry live; only /api/entries/confirm does that, after the processor
- * confirms payment (never trust the initial submit alone — see
+ * the entry live; only /api/payments/confirm does that, after the
+ * processor confirms payment (never trust the initial submit alone — see
  * CLAUDE.md rule 3, every mutation that touches money gets an audit row). */
 export async function POST(request: Request) {
   const formData = await request.formData();
@@ -90,7 +90,7 @@ export async function POST(request: Request) {
   const session = await getPaymentProvider().createCheckoutSession({
     amountCents: contest.entryFeeCents,
     description: `${contest.name} — entry fee for ${petName}`,
-    successUrl: `${base}/api/entries/confirm`,
+    successUrl: `${base}/api/payments/confirm`,
     cancelUrl: `${base}/enter?canceled=1`,
     customerEmail: ownerEmail,
     metadata: { transactionId: transaction.id },
