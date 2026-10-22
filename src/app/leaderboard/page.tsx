@@ -85,7 +85,7 @@ export default async function LeaderboardPage() {
                         alt={entry.petName}
                         fill
                         sizes="56px"
-                        className="object-cover transition-transform duration-300 group-hover:scale-110"
+                        className="object-cover object-top transition-transform duration-300 group-hover:scale-110"
                       />
                     </div>
                     <span className="flex-1 truncate text-base font-bold tracking-tight text-neutral-900 transition-colors duration-200 group-hover:text-brand-primary">

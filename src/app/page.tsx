@@ -40,7 +40,7 @@ export default async function HomePage() {
         {topEntries.length > 0 && (
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute inset-0 hidden sm:block"
+            className="pointer-events-none absolute inset-0 hidden lg:block"
           >
             {topEntries.map((entry, index) => {
               const positions = [
@@ -62,7 +62,7 @@ export default async function HomePage() {
             })}
           </div>
         )}
-        <div className="relative z-10 mx-auto flex max-w-2xl flex-col items-center gap-4 rounded-2xl px-4 py-6 sm:bg-brand-accent/90 sm:backdrop-blur-sm">
+        <div className="relative z-10 mx-auto flex max-w-2xl flex-col items-center gap-4 rounded-2xl px-4 py-6 lg:bg-brand-accent/90 lg:backdrop-blur-sm">
           <h1 className="text-5xl font-extrabold tracking-tight text-brand-primary-dark sm:text-6xl">
             Pet Photo Contest
           </h1>
@@ -142,7 +142,7 @@ export default async function HomePage() {
                           fill
                           priority={index === 0}
                           sizes="(min-width: 640px) 25vw, 50vw"
-                          className="object-cover transition-transform duration-300 group-hover:scale-110"
+                          className="object-cover object-top transition-transform duration-300 group-hover:scale-110"
                         />
                         <span className="absolute left-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-brand-primary text-xs font-bold text-white shadow-sm">
                           {index + 1}
@@ -191,7 +191,7 @@ export default async function HomePage() {
                           alt={activity.entry.petName}
                           fill
                           sizes="40px"
-                          className="object-cover"
+                          className="object-cover object-top"
                         />
                       </div>
                       <div className="min-w-0 flex-1">
@@ -220,8 +220,11 @@ export default async function HomePage() {
 
           {contest.prizeText && (
             <section className="px-6 pb-14">
-              <div className="mx-auto max-w-2xl rounded-xl bg-brand-primary px-6 py-8 text-center text-white shadow-sm transition-shadow duration-300 hover:shadow-lg">
-                <p className="text-sm font-semibold uppercase tracking-wide text-brand-secondary">Grand Prize</p>
+              <div className="mx-auto max-w-2xl rounded-xl bg-gradient-to-br from-brand-primary to-brand-primary-dark px-6 py-8 text-center text-white shadow-sm transition-shadow duration-300 hover:shadow-lg">
+                <span className="text-3xl" aria-hidden="true">
+                  🍺
+                </span>
+                <p className="mt-2 text-sm font-semibold uppercase tracking-wide text-brand-secondary">Grand Prize</p>
                 <p className="mt-2 text-lg">{contest.prizeText}</p>
               </div>
             </section>

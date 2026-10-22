@@ -27,6 +27,19 @@ interface SeedEntry {
   votePurchases: number[]; // one Transaction per array entry, each SUCCEEDED
 }
 
+// Cycled across seeded vote transactions so "Recent activity" on the
+// homepage reads like a real contest in progress rather than one repeated
+// placeholder name — this only affects what RUN_SEED_ON_BUILD generates,
+// never a real donor's name.
+const SEED_SUPPORTERS: Array<{ name: string; email: string }> = [
+  { name: "Megan Ruiz", email: "megan.ruiz@example.com" },
+  { name: "Tom Okafor", email: "tom.okafor@example.com" },
+  { name: "Claire Bennett", email: "claire.bennett@example.com" },
+  { name: "James Park", email: "james.park@example.com" },
+  { name: "Olivia Santos", email: "olivia.santos@example.com" },
+  { name: "Derek Hayes", email: "derek.hayes@example.com" },
+];
+
 const SEED_ENTRIES: SeedEntry[] = [
   {
     photoUrl: "/demo/biscuit.jpg",
@@ -83,6 +96,7 @@ async function main() {
     },
   });
 
+  let supporterIndex = 0;
   for (const seed of SEED_ENTRIES) {
     const existing = await prisma.entry.findFirst({
       where: { contestId: contest.id, petName: seed.petName },
@@ -108,6 +122,8 @@ async function main() {
     });
 
     for (const votes of seed.votePurchases) {
+      const supporter = SEED_SUPPORTERS[supporterIndex % SEED_SUPPORTERS.length];
+      supporterIndex += 1;
       await prisma.transaction.create({
         data: {
           contestId: contest.id,
@@ -118,8 +134,8 @@ async function main() {
           voteQuantity: votes,
           processor: "MOCK",
           processorRef: `seed-${entry.id}-${votes}-${Math.random().toString(36).slice(2, 8)}`,
-          donorName: "Demo Supporter",
-          donorEmail: "demo-supporter@example.com",
+          donorName: supporter.name,
+          donorEmail: supporter.email,
         },
       });
     }
