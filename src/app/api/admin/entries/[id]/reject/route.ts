@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getAdminFromSession } from "@/lib/admin/auth";
+import { logAdminAction } from "@/lib/admin/audit";
 import { siteUrl } from "@/lib/site-url";
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -18,10 +19,21 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     return NextResponse.redirect(url, 303);
   }
 
-  await prisma.entry.updateMany({
+  const result = await prisma.entry.updateMany({
     where: { id, status: "PENDING" },
     data: { status: "REJECTED", moderationNote: reason },
   });
+
+  if (result.count > 0) {
+    await logAdminAction({
+      adminUserId: admin.id,
+      adminEmail: admin.email,
+      action: "ENTRY_REJECTED",
+      targetType: "Entry",
+      targetId: id,
+      detail: reason,
+    });
+  }
 
   return NextResponse.redirect(new URL("/admin/moderation", siteUrl()), 303);
 }

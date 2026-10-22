@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getAdminFromSession } from "@/lib/admin/auth";
+import { logAdminAction } from "@/lib/admin/audit";
 import { siteUrl } from "@/lib/site-url";
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -16,10 +17,21 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   // updateMany (not update) so this is a no-op instead of an error if the
   // entry was already handled — e.g. a double click, or two admins acting
   // on the same queue at once.
-  await prisma.entry.updateMany({
+  const result = await prisma.entry.updateMany({
     where: { id, status: "PENDING" },
     data: { status: "APPROVED", moderationNote: note },
   });
+
+  if (result.count > 0) {
+    await logAdminAction({
+      adminUserId: admin.id,
+      adminEmail: admin.email,
+      action: "ENTRY_APPROVED",
+      targetType: "Entry",
+      targetId: id,
+      detail: note ?? undefined,
+    });
+  }
 
   return NextResponse.redirect(new URL("/admin/moderation", siteUrl()), 303);
 }

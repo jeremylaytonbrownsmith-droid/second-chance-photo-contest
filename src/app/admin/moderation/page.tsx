@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/admin/auth";
 
@@ -30,14 +31,22 @@ export default async function ModerationPage({
               Signed in as {admin.email} · {pending.length} pending
             </p>
           </div>
-          <form action="/api/admin/logout" method="POST" className="shrink-0">
-            <button
-              type="submit"
+          <div className="flex shrink-0 items-center gap-2">
+            <Link
+              href="/admin/activity"
               className="whitespace-nowrap rounded-md border border-neutral-300 px-3 py-1.5 text-sm font-medium text-neutral-600 transition-colors duration-150 hover:bg-white"
             >
-              Sign out
-            </button>
-          </form>
+              Activity log
+            </Link>
+            <form action="/api/admin/logout" method="POST">
+              <button
+                type="submit"
+                className="whitespace-nowrap rounded-md border border-neutral-300 px-3 py-1.5 text-sm font-medium text-neutral-600 transition-colors duration-150 hover:bg-white"
+              >
+                Sign out
+              </button>
+            </form>
+          </div>
         </div>
 
         {error && (

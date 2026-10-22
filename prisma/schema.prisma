@@ -241,11 +241,45 @@ model AdminUser {
   passwordHash String
   role         AdminRole @default(MODERATOR)
 
+  // Login brute-force protection — incremented on each failed password
+  // check, reset on success. lockedUntil blocks further attempts (even
+  // with the correct password) until it passes, without needing a
+  // separate rate-limit store (Vercel's serverless functions don't share
+  // memory between invocations, so this has to live in the database).
+  failedLoginAttempts Int       @default(0)
+  lockedUntil         DateTime?
+
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   voidedAt  DateTime?
 
+  auditLogs AdminAuditLog[]
+
   @@map("admin_users")
+}
+
+// ---------------------------------------------------------------------------
+// Admin audit log — who did what, when. Covers login attempts (including
+// failed ones, so a brute-force run is visible after the fact) and every
+// moderation decision. adminUserId is nullable because a failed login with
+// an email that doesn't match any admin still needs to be logged, and
+// there's no AdminUser row to point it at.
+// ---------------------------------------------------------------------------
+
+model AdminAuditLog {
+  id          String     @id @default(cuid())
+  adminUserId String?
+  adminUser   AdminUser? @relation(fields: [adminUserId], references: [id])
+  adminEmail  String
+  action      String
+  targetType  String?
+  targetId    String?
+  detail      String?
+
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@map("admin_audit_logs")
 }
 
 // ---------------------------------------------------------------------------
