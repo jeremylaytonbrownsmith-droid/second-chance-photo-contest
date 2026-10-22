@@ -7,15 +7,28 @@ export const dynamic = "force-dynamic";
 
 const ACTION_LABELS: Record<string, string> = {
   LOGIN_SUCCESS: "Signed in",
-  LOGIN_FAILED: "Failed sign-in attempt",
+  LOGIN_FAILED: "Failed sign-in attempt (wrong password)",
   LOGIN_LOCKED: "Account locked (too many failed attempts)",
   LOGIN_BLOCKED_LOCKED: "Blocked sign-in attempt (account locked)",
   LOGIN_FAILED_UNKNOWN_EMAIL: "Failed sign-in attempt (unknown email)",
+  PASSWORD_VERIFIED: "Password verified — passkey step next",
+  PASSKEY_REGISTERED: "Registered a new passkey",
+  PASSKEY_REGISTER_FAILED: "Failed to register a passkey",
+  PASSKEY_LOGIN_FAILED: "Failed passkey verification",
+  LOGIN_SUCCESS_MFA_BYPASSED: "Signed in — passkey step bypassed (ADMIN_DISABLE_PASSKEY_MFA)",
   ENTRY_APPROVED: "Approved an entry",
   ENTRY_REJECTED: "Rejected an entry",
 };
 
-const ALERT_ACTIONS = new Set(["LOGIN_FAILED", "LOGIN_LOCKED", "LOGIN_BLOCKED_LOCKED", "LOGIN_FAILED_UNKNOWN_EMAIL"]);
+const ALERT_ACTIONS = new Set([
+  "LOGIN_FAILED",
+  "LOGIN_LOCKED",
+  "LOGIN_BLOCKED_LOCKED",
+  "LOGIN_FAILED_UNKNOWN_EMAIL",
+  "PASSKEY_REGISTER_FAILED",
+  "PASSKEY_LOGIN_FAILED",
+  "LOGIN_SUCCESS_MFA_BYPASSED",
+]);
 
 export default async function AdminActivityPage() {
   const admin = await requireAdmin();

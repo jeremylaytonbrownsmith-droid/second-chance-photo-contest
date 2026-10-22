@@ -254,8 +254,32 @@ model AdminUser {
   voidedAt  DateTime?
 
   auditLogs AdminAuditLog[]
+  passkeys  AdminPasskey[]
 
   @@map("admin_users")
+}
+
+// ---------------------------------------------------------------------------
+// Passkeys (WebAuthn) — the second factor. One AdminUser can register more
+// than one (e.g. phone + laptop). credentialId is what the browser sends
+// back to identify which key signed a login; publicKey/counter are what
+// verifyAuthenticationResponse() needs to check that signature and guard
+// against a cloned authenticator (counter must only ever increase).
+// ---------------------------------------------------------------------------
+
+model AdminPasskey {
+  id           String    @id @default(cuid())
+  adminUserId  String
+  adminUser    AdminUser @relation(fields: [adminUserId], references: [id])
+  credentialId String    @unique
+  publicKey    Bytes
+  counter      Int       @default(0)
+  deviceLabel  String?
+
+  createdAt  DateTime  @default(now())
+  lastUsedAt DateTime?
+
+  @@map("admin_passkeys")
 }
 
 // ---------------------------------------------------------------------------
