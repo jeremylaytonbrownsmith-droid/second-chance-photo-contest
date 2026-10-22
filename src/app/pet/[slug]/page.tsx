@@ -9,6 +9,7 @@ import { theme } from "@/lib/theme";
 import { siteUrl } from "@/lib/site-url";
 import { ShareButtons } from "./share-buttons";
 import { VoteForm } from "./vote-form";
+import { FreeVoteForm } from "./free-vote-form";
 
 async function loadEntry(slug: string) {
   const contest = await prisma.contest.findFirst({ orderBy: { startsAt: "desc" } });
@@ -45,10 +46,28 @@ export default async function PetPage({
   searchParams,
 }: {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ entered?: string; voted?: string; vote_canceled?: string; error?: string }>;
+  searchParams: Promise<{
+    entered?: string;
+    voted?: string;
+    vote_canceled?: string;
+    error?: string;
+    freeVoted?: string;
+    freeVoteStep?: string;
+    freeVoteEmail?: string;
+    freeVoteError?: string;
+  }>;
 }) {
   const { slug } = await params;
-  const { entered, voted, vote_canceled: voteCanceled, error } = await searchParams;
+  const {
+    entered,
+    voted,
+    vote_canceled: voteCanceled,
+    error,
+    freeVoted,
+    freeVoteStep,
+    freeVoteEmail,
+    freeVoteError,
+  } = await searchParams;
   const entry = await loadEntry(slug);
   if (!entry) notFound();
 
@@ -74,9 +93,14 @@ export default async function PetPage({
             Payment was canceled — no votes were counted.
           </p>
         )}
-        {error && (
+        {freeVoted === "1" && (
+          <p className="mb-6 rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-center text-sm text-emerald-800">
+            🎉 Your free vote for {entry.petName} is in — thanks for voting!
+          </p>
+        )}
+        {(error || freeVoteError) && (
           <p className="mb-6 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-center text-sm text-red-700">
-            {error}
+            {error || freeVoteError}
           </p>
         )}
         <div className="mb-6 flex flex-col items-center gap-2 text-center">
@@ -119,6 +143,17 @@ export default async function PetPage({
             </div>
           </div>
         </div>
+
+        {contest?.freeVoteEnabled && (
+          <div className="mt-6">
+            <FreeVoteForm
+              entryId={entry.id}
+              entrySlug={entry.slug}
+              step={freeVoteStep === "code" ? "code" : "email"}
+              prefillEmail={freeVoteEmail}
+            />
+          </div>
+        )}
 
         {contest && votePackages.length > 0 && (
           <div className="mt-6">
