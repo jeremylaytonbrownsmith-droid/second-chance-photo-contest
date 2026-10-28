@@ -221,9 +221,19 @@ export default async function HomePage() {
           {contest.prizeText && (
             <section className="px-6 pb-14">
               <div className="mx-auto max-w-2xl rounded-xl bg-gradient-to-br from-brand-primary to-brand-primary-dark px-6 py-8 text-center text-white shadow-sm transition-shadow duration-300 hover:shadow-lg">
-                <span className="text-3xl" aria-hidden="true">
-                  🍺
-                </span>
+                <svg
+                  className="mx-auto h-8 w-8"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <circle cx="12" cy="8" r="5" />
+                  <path d="M8.5 12.5 7 21l5-3 5 3-1.5-8.5" />
+                </svg>
                 <p className="mt-2 text-sm font-semibold uppercase tracking-wide text-brand-secondary">Grand Prize</p>
                 <p className="mt-2 text-lg">{contest.prizeText}</p>
               </div>
