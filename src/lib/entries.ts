@@ -1,5 +1,5 @@
 import { prisma } from "./prisma";
-import type { Entry, EntryStatus } from "@prisma/client";
+import type { AnimalSpecies, Entry, EntryStatus } from "@prisma/client";
 
 /**
  * Entry CRUD/query helpers. All public-facing reads filter to APPROVED —
@@ -42,16 +42,18 @@ export interface ListEntriesOptions {
   search?: string;
   sort?: EntrySort;
   status?: EntryStatus;
+  species?: AnimalSpecies;
   limit?: number;
 }
 
 export async function listApprovedEntries(options: ListEntriesOptions): Promise<Entry[]> {
-  const { contestId, search, sort = "newest", status = "APPROVED", limit } = options;
+  const { contestId, search, sort = "newest", status = "APPROVED", species, limit } = options;
 
   const where = {
     contestId,
     status,
     voidedAt: null,
+    ...(species ? { species } : {}),
     ...(search
       ? {
           OR: [
@@ -90,9 +92,9 @@ export async function getApprovedEntryBySlug(contestId: string, slug: string): P
   });
 }
 
-export async function getLeaderboard(contestId: string, limit = 50): Promise<Entry[]> {
+export async function getLeaderboard(contestId: string, limit = 50, species?: AnimalSpecies): Promise<Entry[]> {
   return prisma.entry.findMany({
-    where: { contestId, status: "APPROVED", voidedAt: null, eliminated: false },
+    where: { contestId, status: "APPROVED", voidedAt: null, eliminated: false, ...(species ? { species } : {}) },
     orderBy: { voteCount: "desc" },
     take: limit,
   });

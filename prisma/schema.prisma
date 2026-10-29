@@ -29,6 +29,17 @@ enum EntryStatus {
   DISQUALIFIED // was live, then pulled — e.g. fraud, rule violation
 }
 
+// OTHER covers anything beyond cat/dog (the client has run years with
+// fish, birds, even a groundhog and horses) without needing a migration
+// every time a new animal type shows up — this just needs to split the
+// gallery/leaderboard/moderation queue into a few buckets, not model
+// taxonomy.
+enum AnimalSpecies {
+  DOG
+  CAT
+  OTHER
+}
+
 enum TransactionType {
   ENTRY_FEE
   VOTE_PURCHASE
@@ -118,6 +129,12 @@ model Entry {
   ownerName  String
   ownerEmail String
 
+  // Nullable so entries that predate this field aren't forced to a wrong
+  // guess — every entry submitted through the form going forward always
+  // sets one. rescueSource is always optional (some pets weren't adopted).
+  species      AnimalSpecies?
+  rescueSource String?
+
   photoUrl String // Cloudflare R2 object URL
   slug     String // URL-safe, unique per contest — /pet/{slug}
 
@@ -146,6 +163,7 @@ model Entry {
   @@unique([contestId, slug])
   @@index([contestId, status])
   @@index([contestId, voteCount])
+  @@index([contestId, status, species])
   @@map("entries")
 }
 

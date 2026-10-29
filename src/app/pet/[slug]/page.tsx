@@ -126,6 +126,9 @@ export default async function PetPage({
           <div className="p-6 text-center">
             <h1 className="text-4xl font-extrabold tracking-tight text-brand-primary-dark">{entry.petName}</h1>
             <p className="mt-1 text-sm text-neutral-500">Entered by {entry.ownerName}</p>
+            {entry.rescueSource && (
+              <p className="mt-0.5 text-sm text-neutral-500">Adopted from {entry.rescueSource}</p>
+            )}
             {entry.caption && <p className="mt-4 text-neutral-700">{entry.caption}</p>}
 
             <p className="mt-6 text-3xl font-bold text-brand-primary">

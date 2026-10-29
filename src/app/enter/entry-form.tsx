@@ -65,6 +65,40 @@ export function EntryForm({ entryFeeCents }: { entryFeeCents: number }) {
       </div>
 
       <div>
+        <label htmlFor="species" className="mb-1 block text-sm font-medium text-neutral-700">
+          Pet type
+        </label>
+        <select
+          id="species"
+          name="species"
+          required
+          defaultValue=""
+          className="w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm transition-colors duration-150 focus:border-brand-primary focus:outline-none"
+        >
+          <option value="" disabled>
+            Select one
+          </option>
+          <option value="DOG">Dog</option>
+          <option value="CAT">Cat</option>
+          <option value="OTHER">Other</option>
+        </select>
+      </div>
+
+      <div>
+        <label htmlFor="rescueSource" className="mb-1 block text-sm font-medium text-neutral-700">
+          Which rescue did your pet come from? (optional)
+        </label>
+        <input
+          id="rescueSource"
+          name="rescueSource"
+          type="text"
+          maxLength={120}
+          placeholder="e.g. Second Chance Pet Adoptions"
+          className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm transition-colors duration-150 focus:border-brand-primary focus:outline-none"
+        />
+      </div>
+
+      <div>
         <label htmlFor="ownerName" className="mb-1 block text-sm font-medium text-neutral-700">
           Your name
         </label>

@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import type { AnimalSpecies } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { getLeaderboard, getContestTotals } from "@/lib/entries";
 import { goalProgress } from "@/lib/pricing";
@@ -9,7 +10,18 @@ export const dynamic = "force-dynamic";
 
 const MEDAL = ["🥇", "🥈", "🥉"];
 
-export default async function LeaderboardPage() {
+function isSpecies(value: string | undefined): value is AnimalSpecies {
+  return value === "DOG" || value === "CAT" || value === "OTHER";
+}
+
+export default async function LeaderboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ species?: string }>;
+}) {
+  const { species: speciesParam } = await searchParams;
+  const species = isSpecies(speciesParam) ? speciesParam : undefined;
+
   const contest = await prisma.contest.findFirst({ orderBy: { startsAt: "desc" } });
 
   if (!contest) {
@@ -21,7 +33,7 @@ export default async function LeaderboardPage() {
   }
 
   const [entries, totals] = await Promise.all([
-    getLeaderboard(contest.id),
+    getLeaderboard(contest.id, 50, species),
     getContestTotals(contest.id),
   ]);
 
@@ -45,6 +57,26 @@ export default async function LeaderboardPage() {
               Back to the gallery
             </span>
           </Link>
+          <div className="flex flex-wrap items-center justify-center gap-2">
+            {([
+              [undefined, "All pets"],
+              ["DOG", "Dogs"],
+              ["CAT", "Cats"],
+              ["OTHER", "Other"],
+            ] as const).map(([value, label]) => (
+              <Link
+                key={label}
+                href={value ? `/leaderboard?species=${value}` : "/leaderboard"}
+                className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors duration-150 ${
+                  species === value
+                    ? "bg-brand-primary text-white"
+                    : "border border-neutral-300 text-neutral-600 hover:bg-brand-accent"
+                }`}
+              >
+                {label}
+              </Link>
+            ))}
+          </div>
         </div>
 
         <div className="mb-10 rounded-lg border border-neutral-200 bg-white p-5 shadow-sm">

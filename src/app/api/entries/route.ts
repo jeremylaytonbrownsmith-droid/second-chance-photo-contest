@@ -11,6 +11,8 @@ const MAX_PHOTO_BYTES = 8 * 1024 * 1024; // safety net — the client resizes be
 
 const entrySchema = z.object({
   petName: z.string().trim().min(1, "Pet name is required").max(80),
+  species: z.enum(["DOG", "CAT", "OTHER"], "Select a pet type"),
+  rescueSource: z.string().trim().max(120).optional().default(""),
   ownerName: z.string().trim().min(1, "Your name is required").max(120),
   ownerEmail: z.email("Enter a valid email"),
   caption: z.string().trim().max(500).optional().default(""),
@@ -26,6 +28,8 @@ export async function POST(request: Request) {
 
   const parsed = entrySchema.safeParse({
     petName: formData.get("petName"),
+    species: formData.get("species"),
+    rescueSource: formData.get("rescueSource") ?? "",
     ownerName: formData.get("ownerName"),
     ownerEmail: formData.get("ownerEmail"),
     caption: formData.get("caption") ?? "",
@@ -50,7 +54,7 @@ export async function POST(request: Request) {
     return errorRedirect("Entries are not open right now");
   }
 
-  const { petName, ownerName, ownerEmail, caption } = parsed.data;
+  const { petName, species, rescueSource, ownerName, ownerEmail, caption } = parsed.data;
 
   const buffer = Buffer.from(await photo.arrayBuffer());
   const { url: photoUrl } = await getStorageProvider().upload({
@@ -68,6 +72,8 @@ export async function POST(request: Request) {
   const entry = await createEntryWithUniqueSlug({
     contestId: contest.id,
     petName,
+    species,
+    rescueSource: rescueSource || null,
     caption,
     ownerName,
     ownerEmail,
@@ -116,6 +122,8 @@ const MAX_SLUG_RETRIES = 3;
 async function createEntryWithUniqueSlug(input: {
   contestId: string;
   petName: string;
+  species: "DOG" | "CAT" | "OTHER";
+  rescueSource: string | null;
   caption: string;
   ownerName: string;
   ownerEmail: string;
@@ -128,6 +136,8 @@ async function createEntryWithUniqueSlug(input: {
         data: {
           contestId: input.contestId,
           petName: input.petName,
+          species: input.species,
+          rescueSource: input.rescueSource,
           caption: input.caption,
           ownerName: input.ownerName,
           ownerEmail: input.ownerEmail,

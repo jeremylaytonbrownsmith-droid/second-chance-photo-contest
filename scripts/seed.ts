@@ -21,6 +21,8 @@ import { uniqueSlugForContest, recomputeVoteCount } from "../src/lib/entries";
 interface SeedEntry {
   photoUrl: string;
   petName: string;
+  species: "DOG" | "CAT" | "OTHER";
+  rescueSource?: string;
   ownerName: string;
   ownerEmail: string;
   caption: string;
@@ -44,6 +46,7 @@ const SEED_ENTRIES: SeedEntry[] = [
   {
     photoUrl: "/demo/biscuit.jpg",
     petName: "Biscuit",
+    species: "DOG",
     ownerName: "Dana Whitfield",
     ownerEmail: "dana.whitfield@example.com",
     caption: "Biscuit loves a good car ride with the windows cracked and the wind in her ears.",
@@ -52,6 +55,8 @@ const SEED_ENTRIES: SeedEntry[] = [
   {
     photoUrl: "/demo/rusty.jpg",
     petName: "Rusty",
+    species: "DOG",
+    rescueSource: "Second Chance Pet Adoptions",
     ownerName: "Marcus Delgado",
     ownerEmail: "marcus.delgado@example.com",
     caption: "Rusty exploring the city on a warm evening walk.",
@@ -60,6 +65,7 @@ const SEED_ENTRIES: SeedEntry[] = [
   {
     photoUrl: "/demo/whiskers.jpg",
     petName: "Whiskers",
+    species: "CAT",
     ownerName: "Priya Anand",
     ownerEmail: "priya.anand@example.com",
     caption: "Whiskers holding down the good armchair, as always.",
@@ -68,6 +74,7 @@ const SEED_ENTRIES: SeedEntry[] = [
   {
     photoUrl: "/demo/luna.jpg",
     petName: "Luna",
+    species: "DOG",
     ownerName: "Sarah Kimball",
     ownerEmail: "sarah.kimball@example.com",
     caption: "Luna striking a pose on freshly made sheets.",
@@ -76,6 +83,8 @@ const SEED_ENTRIES: SeedEntry[] = [
   {
     photoUrl: "/demo/jet.jpg",
     petName: "Jet",
+    species: "DOG",
+    rescueSource: "Saving Grace",
     ownerName: "Emily Carter",
     ownerEmail: "emily.carter@example.com",
     caption: "Jet never goes anywhere without his favorite tennis ball.",
@@ -84,6 +93,7 @@ const SEED_ENTRIES: SeedEntry[] = [
   {
     photoUrl: "/demo/banks.jpg",
     petName: "Banks",
+    species: "DOG",
     ownerName: "Jordan Reyes",
     ownerEmail: "jordan.reyes@example.com",
     caption: "Banks and his best friend clocking their evening walk downtown.",
@@ -118,7 +128,18 @@ async function main() {
       where: { contestId: contest.id, petName: seed.petName },
     });
     if (existing) {
-      console.log(`Skipping ${seed.petName} — already seeded.`);
+      // species/rescueSource were added after the first seed run — backfill
+      // them on an already-seeded entry instead of leaving demo data stuck
+      // showing as "Unspecified" in the moderation queue forever.
+      if (existing.species === null) {
+        await prisma.entry.update({
+          where: { id: existing.id },
+          data: { species: seed.species, rescueSource: seed.rescueSource ?? null },
+        });
+        console.log(`Backfilled species for ${seed.petName}.`);
+      } else {
+        console.log(`Skipping ${seed.petName} — already seeded.`);
+      }
       continue;
     }
 
@@ -128,6 +149,8 @@ async function main() {
       data: {
         contestId: contest.id,
         petName: seed.petName,
+        species: seed.species,
+        rescueSource: seed.rescueSource ?? null,
         caption: seed.caption,
         ownerName: seed.ownerName,
         ownerEmail: seed.ownerEmail,

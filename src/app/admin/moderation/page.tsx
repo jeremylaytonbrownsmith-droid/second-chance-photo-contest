@@ -1,9 +1,21 @@
 import Image from "next/image";
 import Link from "next/link";
+import type { AnimalSpecies, Entry } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/admin/auth";
 
 export const dynamic = "force-dynamic";
+
+// Grouped so an admin can batch through one species at a time instead of an
+// interleaved list — requested directly on the client call ("it'd be a
+// simple, like, accept dog, cat"). null covers any legacy entry from before
+// the species field existed.
+const GROUP_ORDER: Array<{ species: AnimalSpecies | null; label: string }> = [
+  { species: "DOG", label: "Dogs" },
+  { species: "CAT", label: "Cats" },
+  { species: "OTHER", label: "Other" },
+  { species: null, label: "Unspecified" },
+];
 
 export default async function ModerationPage({
   searchParams,
@@ -20,6 +32,11 @@ export default async function ModerationPage({
         orderBy: { createdAt: "asc" },
       })
     : [];
+
+  const groups = GROUP_ORDER.map((group) => ({
+    ...group,
+    entries: pending.filter((entry) => entry.species === group.species),
+  })).filter((group) => group.entries.length > 0);
 
   return (
     <main className="flex-1 bg-neutral-100 px-6 py-10">
@@ -60,64 +77,82 @@ export default async function ModerationPage({
             Nothing waiting for review — you&apos;re caught up.
           </p>
         ) : (
-          <div className="space-y-4">
-            {pending.map((entry) => (
-              <div key={entry.id} className="flex gap-4 rounded-lg border border-neutral-200 bg-white p-4 shadow-sm">
-                <div className="relative h-28 w-28 shrink-0 overflow-hidden rounded-md bg-neutral-100">
-                  <Image src={entry.photoUrl} alt={entry.petName} fill sizes="112px" className="object-cover" />
+          <div className="space-y-8">
+            {groups.map((group) => (
+              <section key={group.label}>
+                <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-neutral-500">
+                  {group.label} <span className="font-normal text-neutral-400">({group.entries.length})</span>
+                </h2>
+                <div className="space-y-4">
+                  {group.entries.map((entry) => (
+                    <EntryCard key={entry.id} entry={entry} />
+                  ))}
                 </div>
-
-                <div className="min-w-0 flex-1">
-                  <p className="font-semibold text-neutral-900">{entry.petName}</p>
-                  <p className="text-sm text-neutral-500">
-                    {entry.ownerName} · {entry.ownerEmail}
-                  </p>
-                  {entry.caption && <p className="mt-1 text-sm text-neutral-700">{entry.caption}</p>}
-                  <p className="mt-1 text-xs text-neutral-400">
-                    Submitted {entry.createdAt.toLocaleDateString()} {entry.createdAt.toLocaleTimeString()}
-                  </p>
-
-                  <div className="mt-3 flex flex-wrap items-center gap-2">
-                    <form action={`/api/admin/entries/${entry.id}/approve`} method="POST">
-                      <button
-                        type="submit"
-                        className="rounded-md bg-emerald-600 px-3 py-1.5 text-sm font-medium text-white transition-colors duration-150 hover:bg-emerald-700"
-                      >
-                        Approve
-                      </button>
-                    </form>
-
-                    <details className="group">
-                      <summary className="cursor-pointer list-none rounded-md border border-red-300 px-3 py-1.5 text-sm font-medium text-red-700 transition-colors duration-150 hover:bg-red-50">
-                        Reject
-                      </summary>
-                      <form
-                        action={`/api/admin/entries/${entry.id}/reject`}
-                        method="POST"
-                        className="mt-2 flex flex-wrap items-center gap-2"
-                      >
-                        <input
-                          type="text"
-                          name="reason"
-                          required
-                          placeholder="Reason (required)"
-                          className="w-56 rounded-md border border-neutral-300 px-2 py-1.5 text-sm focus:border-brand-primary focus:outline-none"
-                        />
-                        <button
-                          type="submit"
-                          className="rounded-md bg-red-600 px-3 py-1.5 text-sm font-medium text-white transition-colors duration-150 hover:bg-red-700"
-                        >
-                          Confirm reject
-                        </button>
-                      </form>
-                    </details>
-                  </div>
-                </div>
-              </div>
+              </section>
             ))}
           </div>
         )}
       </div>
     </main>
+  );
+}
+
+function EntryCard({ entry }: { entry: Entry }) {
+  return (
+    <div className="flex gap-4 rounded-lg border border-neutral-200 bg-white p-4 shadow-sm">
+      <div className="relative h-28 w-28 shrink-0 overflow-hidden rounded-md bg-neutral-100">
+        <Image src={entry.photoUrl} alt={entry.petName} fill sizes="112px" className="object-cover" />
+      </div>
+
+      <div className="min-w-0 flex-1">
+        <p className="font-semibold text-neutral-900">{entry.petName}</p>
+        <p className="text-sm text-neutral-500">
+          {entry.ownerName} · {entry.ownerEmail}
+        </p>
+        {entry.rescueSource && (
+          <p className="mt-0.5 text-xs text-neutral-400">From: {entry.rescueSource}</p>
+        )}
+        {entry.caption && <p className="mt-1 text-sm text-neutral-700">{entry.caption}</p>}
+        <p className="mt-1 text-xs text-neutral-400">
+          Submitted {entry.createdAt.toLocaleDateString()} {entry.createdAt.toLocaleTimeString()}
+        </p>
+
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          <form action={`/api/admin/entries/${entry.id}/approve`} method="POST">
+            <button
+              type="submit"
+              className="rounded-md bg-emerald-600 px-3 py-1.5 text-sm font-medium text-white transition-colors duration-150 hover:bg-emerald-700"
+            >
+              Approve
+            </button>
+          </form>
+
+          <details className="group">
+            <summary className="cursor-pointer list-none rounded-md border border-red-300 px-3 py-1.5 text-sm font-medium text-red-700 transition-colors duration-150 hover:bg-red-50">
+              Reject
+            </summary>
+            <form
+              action={`/api/admin/entries/${entry.id}/reject`}
+              method="POST"
+              className="mt-2 flex flex-wrap items-center gap-2"
+            >
+              <input
+                type="text"
+                name="reason"
+                required
+                placeholder="Reason (required)"
+                className="w-56 rounded-md border border-neutral-300 px-2 py-1.5 text-sm focus:border-brand-primary focus:outline-none"
+              />
+              <button
+                type="submit"
+                className="rounded-md bg-red-600 px-3 py-1.5 text-sm font-medium text-white transition-colors duration-150 hover:bg-red-700"
+              >
+                Confirm reject
+              </button>
+            </form>
+          </details>
+        </div>
+      </div>
+    </div>
   );
 }

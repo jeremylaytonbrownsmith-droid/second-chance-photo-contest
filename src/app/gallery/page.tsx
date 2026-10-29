@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import type { AnimalSpecies } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { listApprovedEntries, type EntrySort } from "@/lib/entries";
 import { theme } from "@/lib/theme";
@@ -10,18 +11,25 @@ function isEntrySort(value: string | undefined): value is EntrySort {
   return value === "newest" || value === "votes" || value === "random";
 }
 
+function isSpecies(value: string | undefined): value is AnimalSpecies {
+  return value === "DOG" || value === "CAT" || value === "OTHER";
+}
+
+const SPECIES_LABELS: Record<AnimalSpecies, string> = { DOG: "Dogs", CAT: "Cats", OTHER: "Other" };
+
 export default async function GalleryPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; sort?: string }>;
+  searchParams: Promise<{ q?: string; sort?: string; species?: string }>;
 }) {
-  const { q, sort: sortParam } = await searchParams;
+  const { q, sort: sortParam, species: speciesParam } = await searchParams;
   const sort: EntrySort = isEntrySort(sortParam) ? sortParam : "newest";
+  const species = isSpecies(speciesParam) ? speciesParam : undefined;
 
   const contest = await prisma.contest.findFirst({ orderBy: { startsAt: "desc" } });
 
   const entries = contest
-    ? await listApprovedEntries({ contestId: contest.id, search: q, sort })
+    ? await listApprovedEntries({ contestId: contest.id, search: q, sort, species })
     : [];
 
   return (
@@ -53,6 +61,16 @@ export default async function GalleryPage({
             placeholder="Search by pet or owner name"
             className="w-64 rounded-md border border-neutral-300 px-3 py-2 text-sm transition-colors duration-150 focus:border-brand-primary focus:outline-none"
           />
+          <select
+            name="species"
+            defaultValue={species ?? ""}
+            className="rounded-md border border-neutral-300 px-3 py-2 text-sm transition-colors duration-150 focus:border-brand-primary focus:outline-none"
+          >
+            <option value="">All pets</option>
+            <option value="DOG">Dogs</option>
+            <option value="CAT">Cats</option>
+            <option value="OTHER">Other</option>
+          </select>
           <select
             name="sort"
             defaultValue={sort}
@@ -90,6 +108,11 @@ export default async function GalleryPage({
                     sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw"
                     className="object-cover object-top transition-transform duration-300 group-hover:scale-110"
                   />
+                  {entry.species && (
+                    <span className="absolute left-2 top-2 rounded-full bg-white/90 px-2 py-0.5 text-[11px] font-semibold text-brand-primary-dark shadow-sm">
+                      {SPECIES_LABELS[entry.species].replace(/s$/, "")}
+                    </span>
+                  )}
                 </div>
                 <div className="p-3">
                   <p className="truncate text-base font-bold tracking-tight text-neutral-900 transition-colors duration-200 group-hover:text-brand-primary">
