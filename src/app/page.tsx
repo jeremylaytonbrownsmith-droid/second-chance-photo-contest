@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import { getLeaderboard, getContestTotals, getRecentActivity } from "@/lib/entries";
+import { listApprovedEntries, countApprovedEntries, getContestTotals, getRecentActivity } from "@/lib/entries";
 import { goalProgress } from "@/lib/pricing";
 import { theme } from "@/lib/theme";
 import { Countdown } from "@/components/Countdown";
@@ -27,9 +27,21 @@ const STEPS = [
 export default async function HomePage() {
   const contest = await prisma.contest.findFirst({ orderBy: { startsAt: "desc" } });
 
-  const [topEntries, totals, recentActivity] = contest
-    ? await Promise.all([getLeaderboard(contest.id, 4), getContestTotals(contest.id), getRecentActivity(contest.id)])
-    : [[], { raisedCents: 0 }, []];
+  // Newest-first, not vote-ranked — a homepage showcase that drops an
+  // entry the moment something else out-votes it reads as the site
+  // deleting people's pets. This way every new entry shows up right away
+  // and nothing already shown here silently disappears because of votes.
+  // Capped at 12 for page weight, not because that's "the contest" — the
+  // real count and the full roster both live right next to it.
+  const SHOWCASE_LIMIT = 12;
+  const [showcaseEntries, totalEntryCount, totals, recentActivity] = contest
+    ? await Promise.all([
+        listApprovedEntries({ contestId: contest.id, sort: "newest", limit: SHOWCASE_LIMIT }),
+        countApprovedEntries(contest.id),
+        getContestTotals(contest.id),
+        getRecentActivity(contest.id),
+      ])
+    : [[], 0, { raisedCents: 0 }, []];
 
   const progress = contest ? goalProgress(totals.raisedCents, contest.goalCents) : null;
 
@@ -37,12 +49,12 @@ export default async function HomePage() {
     <main className="flex-1 bg-brand-accent">
       {/* Hero */}
       <section className="relative overflow-hidden px-6 pb-12 pt-16 text-center">
-        {topEntries.length > 0 && (
+        {showcaseEntries.length > 0 && (
           <div
             aria-hidden="true"
             className="pointer-events-none absolute inset-0 hidden lg:block"
           >
-            {topEntries.map((entry, index) => {
+            {showcaseEntries.slice(0, 4).map((entry, index) => {
               const positions = [
                 "left-[3%] top-[8%] -rotate-6",
                 "right-[4%] top-[4%] rotate-6",
@@ -121,15 +133,18 @@ export default async function HomePage() {
             </div>
           </section>
 
-          {/* Top contestants preview */}
-          {topEntries.length > 0 && (
+          {/* Contestant showcase */}
+          {showcaseEntries.length > 0 && (
             <section className="px-6 pb-14">
               <div className="mx-auto max-w-4xl">
-                <h2 className="mb-6 text-center text-xl font-semibold text-brand-primary-dark">
+                <h2 className="mb-1 text-center text-xl font-semibold text-brand-primary-dark">
                   Meet the contestants
                 </h2>
+                <p className="mb-6 text-center text-sm text-neutral-500">
+                  {totalEntryCount.toLocaleString()} {totalEntryCount === 1 ? "pet" : "pets"} entered so far
+                </p>
                 <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-                  {topEntries.map((entry, index) => (
+                  {showcaseEntries.map((entry, index) => (
                     <Link
                       key={entry.id}
                       href={`/pet/${entry.slug}`}
@@ -144,9 +159,6 @@ export default async function HomePage() {
                           sizes="(min-width: 640px) 25vw, 50vw"
                           className="object-cover object-top transition-transform duration-300 group-hover:scale-110"
                         />
-                        <span className="absolute left-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-brand-primary text-xs font-bold text-white shadow-sm">
-                          {index + 1}
-                        </span>
                       </div>
                       <div className="p-3 text-center">
                         <p className="truncate text-base font-bold tracking-tight text-neutral-900 transition-colors duration-200 group-hover:text-brand-primary">
@@ -165,7 +177,7 @@ export default async function HomePage() {
                     className="group inline-flex items-center gap-1 text-sm font-medium text-brand-primary"
                   >
                     <span className="transition-colors duration-200 group-hover:text-brand-primary-dark">
-                      See every entry
+                      See every entry{totalEntryCount > showcaseEntries.length ? ` (${totalEntryCount.toLocaleString()} total)` : ""}
                     </span>
                     <span className="transition-transform duration-200 group-hover:translate-x-1">→</span>
                   </Link>

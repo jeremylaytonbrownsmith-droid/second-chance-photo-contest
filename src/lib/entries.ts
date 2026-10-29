@@ -42,10 +42,11 @@ export interface ListEntriesOptions {
   search?: string;
   sort?: EntrySort;
   status?: EntryStatus;
+  limit?: number;
 }
 
 export async function listApprovedEntries(options: ListEntriesOptions): Promise<Entry[]> {
-  const { contestId, search, sort = "newest", status = "APPROVED" } = options;
+  const { contestId, search, sort = "newest", status = "APPROVED", limit } = options;
 
   const where = {
     contestId,
@@ -65,14 +66,22 @@ export async function listApprovedEntries(options: ListEntriesOptions): Promise<
     // Deterministic-enough shuffle without a raw SQL ORDER BY random() call
     // per request — fine at contest scale (dozens to low hundreds of
     // entries), revisit if entry counts grow much larger.
-    const entries = await prisma.entry.findMany({ where });
+    const entries = await prisma.entry.findMany({ where, take: limit });
     return shuffle(entries);
   }
 
   return prisma.entry.findMany({
     where,
     orderBy: sort === "votes" ? { voteCount: "desc" } : { createdAt: "desc" },
+    take: limit,
   });
+}
+
+/** Total approved entries in a contest — used for an honest "N entered so
+ * far" count on the homepage, since the showcase grid there only ever
+ * renders a capped subset and shouldn't be read as the full roster. */
+export async function countApprovedEntries(contestId: string): Promise<number> {
+  return prisma.entry.count({ where: { contestId, status: "APPROVED", voidedAt: null } });
 }
 
 export async function getApprovedEntryBySlug(contestId: string, slug: string): Promise<Entry | null> {
