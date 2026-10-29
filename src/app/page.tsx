@@ -55,21 +55,26 @@ export default async function HomePage() {
             className="pointer-events-none absolute inset-0 hidden lg:block"
           >
             {showcaseEntries.slice(0, 6).map((entry, index) => {
+              // Hero section is a fixed ~430px tall at every lg+ width (measured,
+              // doesn't reflow in this range) — three bands per side, each
+              // hugging its own edge (~2%) so none of these ever reach under
+              // the centered text card, with enough vertical gap between
+              // bands for the lg:h-28/w-28 (112px) box size below.
               const positions = [
-                "left-[3%] top-[8%] -rotate-6",
-                "right-[4%] top-[4%] rotate-6",
-                "left-[8%] bottom-[6%] rotate-3",
-                "right-[7%] bottom-[10%] -rotate-3",
-                "left-[15%] top-[42%] rotate-2",
-                "right-[14%] top-[44%] -rotate-2",
+                "left-[2%] top-[2%] -rotate-6",
+                "right-[2%] top-[2%] rotate-6",
+                "left-[2%] top-[36%] rotate-3",
+                "right-[2%] top-[36%] -rotate-3",
+                "left-[2%] top-[70%] -rotate-2",
+                "right-[2%] top-[70%] rotate-2",
               ];
               return (
                 <div
                   key={entry.id}
-                  className={`absolute h-28 w-28 rounded-sm bg-white p-2 shadow-lg lg:h-36 lg:w-36 ${positions[index]}`}
+                  className={`absolute h-24 w-24 rounded-sm bg-white p-2 shadow-lg lg:h-28 lg:w-28 ${positions[index]}`}
                 >
                   <div className="relative h-full w-full overflow-hidden">
-                    <Image src={entry.photoUrl} alt="" fill sizes="144px" className="object-cover" />
+                    <Image src={entry.photoUrl} alt="" fill sizes="112px" className="object-cover" />
                   </div>
                 </div>
               );
