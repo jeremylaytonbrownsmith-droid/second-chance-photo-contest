@@ -54,12 +54,14 @@ export default async function HomePage() {
             aria-hidden="true"
             className="pointer-events-none absolute inset-0 hidden lg:block"
           >
-            {showcaseEntries.slice(0, 4).map((entry, index) => {
+            {showcaseEntries.slice(0, 6).map((entry, index) => {
               const positions = [
                 "left-[3%] top-[8%] -rotate-6",
                 "right-[4%] top-[4%] rotate-6",
                 "left-[8%] bottom-[6%] rotate-3",
                 "right-[7%] bottom-[10%] -rotate-3",
+                "left-[15%] top-[42%] rotate-2",
+                "right-[14%] top-[44%] -rotate-2",
               ];
               return (
                 <div
@@ -136,14 +138,14 @@ export default async function HomePage() {
           {/* Contestant showcase */}
           {showcaseEntries.length > 0 && (
             <section className="px-6 pb-14">
-              <div className="mx-auto max-w-4xl">
+              <div className="mx-auto max-w-6xl">
                 <h2 className="mb-1 text-center text-xl font-semibold text-brand-primary-dark">
                   Meet the contestants
                 </h2>
                 <p className="mb-6 text-center text-sm text-neutral-500">
                   {totalEntryCount.toLocaleString()} {totalEntryCount === 1 ? "pet" : "pets"} entered so far
                 </p>
-                <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+                <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-6">
                   {showcaseEntries.map((entry, index) => (
                     <Link
                       key={entry.id}
@@ -156,12 +158,12 @@ export default async function HomePage() {
                           alt={entry.petName}
                           fill
                           priority={index === 0}
-                          sizes="(min-width: 640px) 25vw, 50vw"
+                          sizes="(min-width: 1024px) 16vw, (min-width: 640px) 25vw, 33vw"
                           className="object-cover object-top transition-transform duration-300 group-hover:scale-110"
                         />
                       </div>
-                      <div className="p-3 text-center">
-                        <p className="truncate text-base font-bold tracking-tight text-neutral-900 transition-colors duration-200 group-hover:text-brand-primary">
+                      <div className="p-2 text-center">
+                        <p className="truncate text-sm font-bold tracking-tight text-neutral-900 transition-colors duration-200 group-hover:text-brand-primary">
                           {entry.petName}
                         </p>
                         <p className="text-xs font-medium text-neutral-500">
