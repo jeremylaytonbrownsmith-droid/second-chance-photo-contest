@@ -50,6 +50,12 @@ export default async function ModerationPage({
           </div>
           <div className="flex shrink-0 items-center gap-2">
             <Link
+              href="/admin/reports"
+              className="whitespace-nowrap rounded-md border border-neutral-300 px-3 py-1.5 text-sm font-medium text-neutral-600 transition-colors duration-150 hover:bg-white"
+            >
+              Reports
+            </Link>
+            <Link
               href="/admin/activity"
               className="whitespace-nowrap rounded-md border border-neutral-300 px-3 py-1.5 text-sm font-medium text-neutral-600 transition-colors duration-150 hover:bg-white"
             >
