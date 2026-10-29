@@ -6,6 +6,7 @@ import { goalProgress } from "@/lib/pricing";
 import { theme } from "@/lib/theme";
 import { Countdown } from "@/components/Countdown";
 import { formatRelativeTime } from "@/lib/format-relative-time";
+import { HeroCollage } from "./HeroCollage";
 
 export const dynamic = "force-dynamic";
 
@@ -49,38 +50,7 @@ export default async function HomePage() {
     <main className="flex-1 bg-brand-accent">
       {/* Hero */}
       <section className="relative overflow-hidden px-6 pb-12 pt-16 text-center">
-        {showcaseEntries.length > 0 && (
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-0 hidden lg:block"
-          >
-            {showcaseEntries.slice(0, 6).map((entry, index) => {
-              // Hero section is a fixed ~430px tall at every lg+ width (measured,
-              // doesn't reflow in this range) — three bands per side, each
-              // hugging its own edge (~2%) so none of these ever reach under
-              // the centered text card, with enough vertical gap between
-              // bands for the lg:h-28/w-28 (112px) box size below.
-              const positions = [
-                "left-[2%] top-[2%] -rotate-6",
-                "right-[2%] top-[2%] rotate-6",
-                "left-[2%] top-[36%] rotate-3",
-                "right-[2%] top-[36%] -rotate-3",
-                "left-[2%] top-[70%] -rotate-2",
-                "right-[2%] top-[70%] rotate-2",
-              ];
-              return (
-                <div
-                  key={entry.id}
-                  className={`absolute h-24 w-24 rounded-sm bg-white p-2 shadow-lg lg:h-28 lg:w-28 ${positions[index]}`}
-                >
-                  <div className="relative h-full w-full overflow-hidden">
-                    <Image src={entry.photoUrl} alt="" fill sizes="112px" className="object-cover" />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
+        <HeroCollage pool={showcaseEntries.map((entry) => ({ id: entry.id, photoUrl: entry.photoUrl }))} />
         <div className="relative z-10 mx-auto flex max-w-2xl flex-col items-center gap-4 rounded-2xl px-4 py-6 lg:bg-brand-accent/90 lg:backdrop-blur-sm">
           <h1 className="text-5xl font-extrabold tracking-tight text-brand-primary-dark sm:text-6xl">
             Pet Photo Contest
