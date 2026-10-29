@@ -73,6 +73,22 @@ const SEED_ENTRIES: SeedEntry[] = [
     caption: "Luna striking a pose on freshly made sheets.",
     votePurchases: [30, 45, 20, 15, 10],
   },
+  {
+    photoUrl: "/demo/jet.jpg",
+    petName: "Jet",
+    ownerName: "Emily Carter",
+    ownerEmail: "emily.carter@example.com",
+    caption: "Jet never goes anywhere without his favorite tennis ball.",
+    votePurchases: [60, 50, 40, 70, 40],
+  },
+  {
+    photoUrl: "/demo/banks.jpg",
+    petName: "Banks",
+    ownerName: "Jordan Reyes",
+    ownerEmail: "jordan.reyes@example.com",
+    caption: "Banks and his best friend clocking their evening walk downtown.",
+    votePurchases: [50, 30, 40, 30],
+  },
 ];
 
 async function main() {
