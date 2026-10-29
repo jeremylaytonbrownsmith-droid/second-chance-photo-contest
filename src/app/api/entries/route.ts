@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { getStorageProvider } from "@/lib/storage";
-import { uniqueSlugForContest } from "@/lib/entries";
+import { slugify, uniqueSlugForContest } from "@/lib/entries";
 import { getPaymentProvider } from "@/lib/payments";
 import { siteUrl } from "@/lib/site-url";
 
@@ -52,25 +53,25 @@ export async function POST(request: Request) {
   const { petName, ownerName, ownerEmail, caption } = parsed.data;
 
   const buffer = Buffer.from(await photo.arrayBuffer());
-  const slug = await uniqueSlugForContest(contest.id, petName);
-  const key = `entries/${contest.id}/${slug}-${Date.now()}.jpg`;
   const { url: photoUrl } = await getStorageProvider().upload({
-    key,
+    key: `entries/${contest.id}/${slugify(petName)}-${Date.now()}.jpg`,
     buffer,
     contentType: photo.type,
   });
 
-  const entry = await prisma.entry.create({
-    data: {
-      contestId: contest.id,
-      petName,
-      caption,
-      ownerName,
-      ownerEmail,
-      photoUrl,
-      slug,
-      status: "PENDING",
-    },
+  // uniqueSlugForContest checks-then-creates, which isn't atomic — under
+  // concurrent submissions for the same pet name (e.g. a launch-day rush),
+  // two requests can both pass the check before either inserts, and the
+  // second hits the @@unique([contestId, slug]) constraint. Retry with a
+  // fresh slug instead of surfacing that as a 500 to someone just trying
+  // to enter their pet.
+  const entry = await createEntryWithUniqueSlug({
+    contestId: contest.id,
+    petName,
+    caption,
+    ownerName,
+    ownerEmail,
+    photoUrl,
   });
 
   const transaction = await prisma.transaction.create({
@@ -108,4 +109,42 @@ function errorRedirect(message: string): NextResponse {
   const url = new URL("/enter", siteUrl());
   url.searchParams.set("error", message);
   return NextResponse.redirect(url, 303);
+}
+
+const MAX_SLUG_RETRIES = 3;
+
+async function createEntryWithUniqueSlug(input: {
+  contestId: string;
+  petName: string;
+  caption: string;
+  ownerName: string;
+  ownerEmail: string;
+  photoUrl: string;
+}) {
+  for (let attempt = 0; attempt <= MAX_SLUG_RETRIES; attempt += 1) {
+    const slug = await uniqueSlugForContest(input.contestId, input.petName);
+    try {
+      return await prisma.entry.create({
+        data: {
+          contestId: input.contestId,
+          petName: input.petName,
+          caption: input.caption,
+          ownerName: input.ownerName,
+          ownerEmail: input.ownerEmail,
+          photoUrl: input.photoUrl,
+          slug,
+          status: "PENDING",
+        },
+      });
+    } catch (error) {
+      const isSlugCollision =
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === "P2002" &&
+        (error.meta?.target as string[] | undefined)?.includes("slug");
+      if (!isSlugCollision || attempt === MAX_SLUG_RETRIES) throw error;
+      // Loop again — uniqueSlugForContest will see the slug that just won
+      // the race and pick a different one.
+    }
+  }
+  throw new Error("Could not create entry — too many concurrent submissions for this pet name");
 }
