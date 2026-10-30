@@ -110,24 +110,64 @@ what shipped, what's still open, and what's blocking each open item.
   scale. CSV download logs a `REPORT_EXPORTED` audit row. Linked from
   moderation's header.
 
+**Corrected after a second pass over the call transcript (2026-10-30)**
+— the client flagged that something she'd asked for on the call looked
+missing on the live site, which prompted a careful re-read. Two real
+gaps turned up between what the transcript says and what had shipped:
+- The gallery/leaderboard cards were showing a visible "Dog"/"Cat"
+  pill badge. She never asked for that. What she *did* ask for was "a
+  field between name and votes" showing the rescue/shelter an entry
+  came from, so the rescue gets visibility. `Entry.rescueSource`
+  existed in the schema and admin pages already, but was never
+  surfaced on the actual public gallery/leaderboard rows where she
+  wanted it. Fixed: species badge removed, "From {rescueSource}" line
+  added between name and vote count on both pages.
+- GoGo (her prior vendor) auto-emails an entrant once their photo is
+  approved by moderation — she described this directly on the call.
+  `src/app/api/admin/entries/[id]/approve/route.ts` logged the
+  approval but never sent that email. Fixed: approving an entry now
+  sends a best-effort "{petName} is approved and live!" email via the
+  existing `getEmailProvider()` (same console/Resend provider used for
+  payment-confirmation emails), linking to the pet's page.
+
+Lesson for next time: when a schema/admin feature is "built," check it
+actually reached the public page it was meant for before marking the
+transcript item done — the rescue-source field is the second time this
+session a feature existed in the data model and admin UI but not where
+the client actually asked to see it.
+
+**Also already built, just not labeled as such below before** — the
+pet page's `ShareButtons` component (`src/app/pet/[slug]/share-buttons.tsx`)
+already does the one-click Facebook/X/native-share-sheet/copy-link
+share she described wanting ("they have the option to just share it...
+beep, one button"). Only the QR code and a per-entry admin
+approve/enable-sharing toggle are still open — see below.
+
 **Deferred — client call items not yet started**, each with what it's
 blocked on:
 - **Sponsor section** (schema + admin CRUD + logo upload + display on
   homepage). Blocked on: sponsor logos/names from the client.
-- **Social share button + QR code**, with an admin toggle to
-  approve/enable sharing per entry or sitewide. Blocked on: a design
-  decision on default-on vs. admin-gated (client raised both; didn't
-  settle on one).
+- **QR code generation**, plus an admin toggle to approve/enable
+  sharing per entry or sitewide (share buttons themselves are already
+  built — see above). Blocked on: a design decision on default-on vs.
+  admin-gated (client raised both; didn't settle on one).
+- **Sitewide social-media presence links** (the org's own Facebook/
+  Instagram, near "Enter your pet," separate from the per-entry share
+  buttons above). Not blocked on anything client-side — just not
+  started. Needs the client's actual social links.
 - **Scheduled reminder emails** (e.g. "you haven't voted today" /
   "contest ending soon"). Needs Vercel Cron + an idempotent send-log
   table so a retry or overlapping cron run can't double-send. Blocked
   on: nothing technical — just not started; needs email copy too, which
   is a lighter lift than the legal copy below.
 - **Gallery randomize-on-refresh** — mentioned as a behavior the client
-  likes from GoGo's product. Not blocked on anything; just not done.
-  Worth weighing against the newest-first ordering already used on the
-  homepage showcase (don't silently change both without noticing if
-  they start to conflict).
+  likes from GoGo's product (every page load/refresh reshuffles order,
+  not just the once-selected sort). The gallery already has a manual
+  "Random" sort option in its dropdown, which is not the same thing —
+  she wants it automatic/default, like GoGo's. Worth weighing against
+  the newest-first ordering already used on the homepage showcase
+  (don't silently change both without noticing if they start to
+  conflict).
 - **Site content pages** — About, Rules, Disclaimers, About the Artist,
   Sponsors. Blocked on: real copy from the client/attorney. CLAUDE.md's
   rule ("no official contest rules or legal copy ships without the
@@ -149,6 +189,16 @@ above until they arrive): official contest rules/specs document,
 sponsor logos, treasurer's payment-method preference, and GoGo report
 examples the client offered to send over (may usefully shape the
 `/admin/reports` columns further once seen).
+
+**Testing expectation, stated directly on the call**: before real
+launch she wants "pretty heavy duty testing," explicitly naming the
+payment-platform integration and the failure mode she's afraid of —
+"we're getting ready to launch something and 800 people try to enter
+and nobody can get in." The concurrency fix above (slug-collision
+retry) is a direct response to that, but it's not the whole of it —
+load/concurrency testing against whatever real payment processor gets
+chosen should happen before go-live, not just unit-level correctness
+testing.
 
 **Unresolved, not about this app**: the client separately pasted some
 soccer-officiating proof-points content earlier in the project and I

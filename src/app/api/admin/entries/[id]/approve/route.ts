@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getAdminFromSession } from "@/lib/admin/auth";
 import { logAdminAction } from "@/lib/admin/audit";
+import { getEmailProvider } from "@/lib/email";
 import { siteUrl } from "@/lib/site-url";
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -31,6 +32,23 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       targetId: id,
       detail: note ?? undefined,
     });
+
+    // GoGo (the client's prior vendor) sends this automatically — she asked
+    // for it directly on the call. Best-effort: a failed notification email
+    // shouldn't undo an already-committed approval.
+    const entry = await prisma.entry.findUnique({ where: { id } });
+    if (entry) {
+      try {
+        await getEmailProvider().send({
+          to: entry.ownerEmail,
+          subject: `${entry.petName} is approved and live in the contest!`,
+          html: `<p>Good news — <strong>${entry.petName}</strong> has been approved and is now live in the contest.</p><p><a href="${new URL(`/pet/${entry.slug}`, siteUrl())}">See ${entry.petName}'s page</a> and start sharing for votes!</p>`,
+          text: `Good news — ${entry.petName} has been approved and is now live in the contest! See the page: ${new URL(`/pet/${entry.slug}`, siteUrl())}`,
+        });
+      } catch {
+        // best-effort, see comment above
+      }
+    }
   }
 
   return NextResponse.redirect(new URL("/admin/moderation", siteUrl()), 303);
