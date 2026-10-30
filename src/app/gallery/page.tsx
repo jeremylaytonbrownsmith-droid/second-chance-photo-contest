@@ -21,7 +21,11 @@ export default async function GalleryPage({
   searchParams: Promise<{ q?: string; sort?: string; species?: string }>;
 }) {
   const { q, sort: sortParam, species: speciesParam } = await searchParams;
-  const sort: EntrySort = isEntrySort(sortParam) ? sortParam : "newest";
+  // Defaults to shuffled, not "newest" — the client specifically wanted the
+  // gallery to reshuffle on every load like GoGo's "view entries" page did
+  // ("Finn was 1st and I just hit refreshed and now Zazzles is 1st"), not
+  // just offer random as one more option in the dropdown.
+  const sort: EntrySort = isEntrySort(sortParam) ? sortParam : "random";
   const species = isSpecies(speciesParam) ? speciesParam : undefined;
 
   const contest = await prisma.contest.findFirst({ orderBy: { startsAt: "desc" } });

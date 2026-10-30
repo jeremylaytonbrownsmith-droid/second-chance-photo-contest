@@ -55,6 +55,7 @@ export default async function ReportsPage() {
                     <th className="px-4 py-2 font-medium">Status</th>
                     <th className="px-4 py-2 text-right font-medium">Votes</th>
                     <th className="px-4 py-2 text-right font-medium">Raised</th>
+                    <th className="px-4 py-2 font-medium">Sharing</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-neutral-100">
@@ -73,11 +74,30 @@ export default async function ReportsPage() {
                       <td className="px-4 py-2 text-right tabular-nums text-neutral-700">
                         ${(row.totalRaisedCents / 100).toFixed(2)}
                       </td>
+                      <td className="px-4 py-2">
+                        {row.status === "APPROVED" ? (
+                          <form action={`/api/admin/entries/${row.entryId}/share`} method="POST">
+                            <input type="hidden" name="approved" value={row.shareApproved ? "0" : "1"} />
+                            <button
+                              type="submit"
+                              className={`whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-semibold transition-colors duration-150 ${
+                                row.shareApproved
+                                  ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-200"
+                                  : "bg-neutral-100 text-neutral-500 hover:bg-neutral-200"
+                              }`}
+                            >
+                              {row.shareApproved ? "Approved — revoke" : "Approve sharing"}
+                            </button>
+                          </form>
+                        ) : (
+                          <span className="text-xs text-neutral-300">—</span>
+                        )}
+                      </td>
                     </tr>
                   ))}
                   {rows.length === 0 && (
                     <tr>
-                      <td colSpan={6} className="px-4 py-8 text-center text-neutral-400">
+                      <td colSpan={7} className="px-4 py-8 text-center text-neutral-400">
                         No entries yet.
                       </td>
                     </tr>

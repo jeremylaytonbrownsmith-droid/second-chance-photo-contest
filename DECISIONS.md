@@ -143,14 +143,33 @@ share she described wanting ("they have the option to just share it...
 beep, one button"). Only the QR code and a per-entry admin
 approve/enable-sharing toggle are still open — see below.
 
+**Shipped 2026-10-30, round 2** — picked up the rest of the buildable
+call items on an open-ended "build anything from the call that needs
+doing" request:
+- **Sponsors** (`Sponsor` model/`SponsorTier` enum, `/admin/sponsors`
+  CRUD with logo upload reusing the existing storage provider, homepage
+  "Thanks to our sponsors" section near the bottom per the call —
+  FEATURED shown larger, SUPPORTER smaller, matching her "three bigger
+  sponsors and six smaller sponsors"). No real sponsor logos exist yet
+  so the homepage section just stays hidden until the client adds one —
+  nothing was faked to fill the space.
+- **QR code + admin sharing approval**, resolved as admin-gated, not
+  default-on: re-reading the transcript, she described this as an
+  "accept/reject" step an admin does on the back end before a pet's
+  share buttons + QR code go live — not opt-out. `Entry.shareApproved`
+  (default false), a toggle in the Reports table's new Sharing column,
+  and the QR code itself (`qrcode` npm package, generated server-side
+  as a data URL — no dependency on a third-party QR image API staying
+  up) now show on `/pet/{slug}` only once approved there.
+- **Gallery randomize-on-refresh** — default sort is now `random`
+  instead of `newest` when no `sort` is in the URL, so the gallery
+  reshuffles on every load the way she described GoGo doing (verified:
+  two loads with no query string returned different first entries).
+  "Newest"/"Most votes" are still there in the dropdown for anyone who
+  wants a stable order.
+
 **Deferred — client call items not yet started**, each with what it's
 blocked on:
-- **Sponsor section** (schema + admin CRUD + logo upload + display on
-  homepage). Blocked on: sponsor logos/names from the client.
-- **QR code generation**, plus an admin toggle to approve/enable
-  sharing per entry or sitewide (share buttons themselves are already
-  built — see above). Blocked on: a design decision on default-on vs.
-  admin-gated (client raised both; didn't settle on one).
 - **Sitewide social-media presence links** (the org's own Facebook/
   Instagram, near "Enter your pet," separate from the per-entry share
   buttons above). Not blocked on anything client-side — just not
@@ -160,14 +179,6 @@ blocked on:
   table so a retry or overlapping cron run can't double-send. Blocked
   on: nothing technical — just not started; needs email copy too, which
   is a lighter lift than the legal copy below.
-- **Gallery randomize-on-refresh** — mentioned as a behavior the client
-  likes from GoGo's product (every page load/refresh reshuffles order,
-  not just the once-selected sort). The gallery already has a manual
-  "Random" sort option in its dropdown, which is not the same thing —
-  she wants it automatic/default, like GoGo's. Worth weighing against
-  the newest-first ordering already used on the homepage showcase
-  (don't silently change both without noticing if they start to
-  conflict).
 - **Site content pages** — About, Rules, Disclaimers, About the Artist,
   Sponsors. Blocked on: real copy from the client/attorney. CLAUDE.md's
   rule ("no official contest rules or legal copy ships without the

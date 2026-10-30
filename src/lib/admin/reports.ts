@@ -12,6 +12,7 @@ export interface EntryReportRow {
   enteredAt: Date;
   voteCount: number;
   totalRaisedCents: number;
+  shareApproved: boolean;
 }
 
 /** One row per entry with its total dollars raised (entry fee + every vote
@@ -48,6 +49,7 @@ export async function getEntryReportRows(contestId: string): Promise<EntryReport
     enteredAt: entry.createdAt,
     voteCount: entry.voteCount,
     totalRaisedCents: totalsByEntry.get(entry.id) ?? 0,
+    shareApproved: entry.shareApproved,
   }));
 }
 
@@ -72,6 +74,7 @@ export function entryReportToCsv(rows: EntryReportRow[]): string {
     "Rescue source",
     "Votes",
     "Total raised ($)",
+    "Sharing approved",
   ];
   const lines = [header.map(csvCell).join(",")];
   for (const row of rows) {
@@ -86,6 +89,7 @@ export function entryReportToCsv(rows: EntryReportRow[]): string {
         row.rescueSource ?? "",
         String(row.voteCount),
         (row.totalRaisedCents / 100).toFixed(2),
+        row.shareApproved ? "Yes" : "No",
       ]
         .map(csvCell)
         .join(","),

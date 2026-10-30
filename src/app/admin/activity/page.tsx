@@ -17,7 +17,11 @@ const ACTION_LABELS: Record<string, string> = {
   LOGIN_SUCCESS_MFA_BYPASSED: "Signed in — passkey step bypassed (ADMIN_DISABLE_PASSKEY_MFA)",
   ENTRY_APPROVED: "Approved an entry",
   ENTRY_REJECTED: "Rejected an entry",
+  ENTRY_SHARE_APPROVED: "Approved social sharing for an entry",
+  ENTRY_SHARE_REVOKED: "Revoked social sharing for an entry",
   REPORT_EXPORTED: "Downloaded the entries CSV report",
+  SPONSOR_ADDED: "Added a sponsor",
+  SPONSOR_REMOVED: "Removed a sponsor",
 };
 
 const ALERT_ACTIONS = new Set([

@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { listApprovedEntries, countApprovedEntries, getContestTotals, getRecentActivity } from "@/lib/entries";
+import { getActiveSponsors } from "@/lib/sponsors";
 import { goalProgress } from "@/lib/pricing";
 import { theme } from "@/lib/theme";
 import { Countdown } from "@/components/Countdown";
@@ -35,14 +36,15 @@ export default async function HomePage() {
   // Capped at 12 for page weight, not because that's "the contest" — the
   // real count and the full roster both live right next to it.
   const SHOWCASE_LIMIT = 12;
-  const [showcaseEntries, totalEntryCount, totals, recentActivity] = contest
+  const [showcaseEntries, totalEntryCount, totals, recentActivity, sponsors] = contest
     ? await Promise.all([
         listApprovedEntries({ contestId: contest.id, sort: "newest", limit: SHOWCASE_LIMIT }),
         countApprovedEntries(contest.id),
         getContestTotals(contest.id),
         getRecentActivity(contest.id),
+        getActiveSponsors(contest.id),
       ])
-    : [[], 0, { raisedCents: 0 }, []];
+    : [[], 0, { raisedCents: 0 }, [], { featured: [], supporter: [] }];
 
   const progress = contest ? goalProgress(totals.raisedCents, contest.goalCents) : null;
 
@@ -263,6 +265,54 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* Sponsors */}
+      {(sponsors.featured.length > 0 || sponsors.supporter.length > 0) && (
+        <section className="border-t border-neutral-200 bg-brand-accent px-6 py-14">
+          <div className="mx-auto max-w-4xl text-center">
+            <h2 className="mb-8 text-xl font-semibold text-brand-primary-dark">Thanks to our sponsors</h2>
+            {sponsors.featured.length > 0 && (
+              <div className="mb-8 flex flex-wrap items-center justify-center gap-8">
+                {sponsors.featured.map((sponsor) => (
+                  <SponsorLogo key={sponsor.id} name={sponsor.name} logoUrl={sponsor.logoUrl} linkUrl={sponsor.linkUrl} size={96} />
+                ))}
+              </div>
+            )}
+            {sponsors.supporter.length > 0 && (
+              <div className="flex flex-wrap items-center justify-center gap-6">
+                {sponsors.supporter.map((sponsor) => (
+                  <SponsorLogo key={sponsor.id} name={sponsor.name} logoUrl={sponsor.logoUrl} linkUrl={sponsor.linkUrl} size={56} />
+                ))}
+              </div>
+            )}
+          </div>
+        </section>
+      )}
     </main>
+  );
+}
+
+function SponsorLogo({
+  name,
+  logoUrl,
+  linkUrl,
+  size,
+}: {
+  name: string;
+  logoUrl: string;
+  linkUrl: string | null;
+  size: number;
+}) {
+  const image = (
+    <div className="relative" style={{ width: size, height: size }}>
+      <Image src={logoUrl} alt={name} fill sizes={`${size}px`} className="object-contain" />
+    </div>
+  );
+  return linkUrl ? (
+    <a href={linkUrl} target="_blank" rel="noopener noreferrer" title={name} className="transition-opacity duration-200 hover:opacity-80">
+      {image}
+    </a>
+  ) : (
+    <div title={name}>{image}</div>
   );
 }

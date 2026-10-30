@@ -69,6 +69,14 @@ enum VerificationPurpose {
   ENTRY_EMAIL
 }
 
+// Two tiers, matching the client's own description of her sponsor roster
+// ("three bigger sponsors and six smaller sponsors") — not a generic
+// configurable-tiers system, since that's what she's actually run.
+enum SponsorTier {
+  FEATURED
+  SUPPORTER
+}
+
 // ---------------------------------------------------------------------------
 // Contest configuration — a row per contest instance (this year's contest,
 // next year's contest, etc.), not a single global settings blob, so past
@@ -111,6 +119,7 @@ model Contest {
   entries      Entry[]
   transactions Transaction[]
   freeVotes    FreeVoteLog[]
+  sponsors     Sponsor[]
 
   @@map("contests")
 }
@@ -150,6 +159,13 @@ model Entry {
 
   eliminated   Boolean   @default(false)
   eliminatedAt DateTime?
+
+  // Separate from `status` on purpose — an entry can be APPROVED (live in
+  // the gallery) well before an admin has reviewed it for social sharing.
+  // Described directly on the call: an admin "accept/reject" step before
+  // the share buttons + QR code go live on the pet's page, distinct from
+  // the moderation accept/reject that gets it into the gallery at all.
+  shareApproved Boolean @default(false)
 
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
@@ -247,6 +263,37 @@ model EmailVerification {
 
   @@index([email, purpose])
   @@map("email_verifications")
+}
+
+// ---------------------------------------------------------------------------
+// Sponsors — directly from the call: she wants a place to put sponsor
+// logos ("up at the top, there's still some blank space... down at the
+// bottom... a sponsored area"), split FEATURED/SUPPORTER to match how she
+// already runs it ("three bigger sponsors and six smaller sponsors").
+// Soft-deletable like everything else (CLAUDE.md rule 4) — a sponsor who
+// drops out one year may come back the next, and the record of who
+// sponsored when shouldn't just vanish.
+// ---------------------------------------------------------------------------
+
+model Sponsor {
+  id        String  @id @default(cuid())
+  contestId String
+  contest   Contest @relation(fields: [contestId], references: [id])
+
+  name    String
+  logoUrl String
+  linkUrl String? // sponsor's own site, if they want the logo clickable
+
+  tier      SponsorTier @default(SUPPORTER)
+  sortOrder Int         @default(0)
+
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  voidedAt   DateTime?
+  voidReason String?
+
+  @@index([contestId, tier, sortOrder])
+  @@map("sponsors")
 }
 
 // ---------------------------------------------------------------------------

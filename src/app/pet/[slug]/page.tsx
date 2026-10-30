@@ -7,7 +7,9 @@ import { getApprovedEntryBySlug } from "@/lib/entries";
 import { parseVotePackages } from "@/lib/pricing";
 import { theme } from "@/lib/theme";
 import { siteUrl } from "@/lib/site-url";
+import { qrCodeDataUrl } from "@/lib/qrcode";
 import { ShareButtons } from "./share-buttons";
+import { ShareQrCode } from "./share-qr-code";
 import { VoteForm } from "./vote-form";
 import { FreeVoteForm } from "./free-vote-form";
 
@@ -74,6 +76,7 @@ export default async function PetPage({
   const pageUrl = `${siteUrl()}/pet/${entry.slug}`;
   const contest = await prisma.contest.findFirst({ orderBy: { startsAt: "desc" } });
   const votePackages = contest ? parseVotePackages(contest.votePackagesJson, contest.votePriceCents) : [];
+  const qrDataUrl = entry.shareApproved ? await qrCodeDataUrl(pageUrl) : null;
 
   return (
     <main className="flex-1 bg-brand-accent px-6 py-12">
@@ -141,9 +144,12 @@ export default async function PetPage({
               </p>
             )}
 
-            <div className="mt-6">
-              <ShareButtons petName={entry.petName} pageUrl={pageUrl} />
-            </div>
+            {entry.shareApproved && qrDataUrl && (
+              <div className="mt-6 flex flex-col items-center gap-4">
+                <ShareButtons petName={entry.petName} pageUrl={pageUrl} />
+                <ShareQrCode petName={entry.petName} dataUrl={qrDataUrl} />
+              </div>
+            )}
           </div>
         </div>
 
