@@ -266,3 +266,41 @@ soccer-officiating proof-points content earlier in the project and I
 asked whether it belonged in a separate document from the "Rescue Brew"
 one-pager brief — never got an answer. Worth asking again if that
 one-pager resurfaces.
+
+## 200-concurrent-vote load test (2026-10-30)
+
+Ran a real 200-concurrent-request load test against a production build
+(`next build && next start`, not dev mode) locally, driving the full
+vote flow end to end: `POST /api/votes` → mock checkout → `GET
+/api/payments/confirm`, weighted 40% onto one "popular pet" entry to
+simulate the worst-case scenario she described (a rush at the very end
+of the contest, concentrated on whoever's leading). Script:
+`/tmp/.../scratchpad/load-test.js` (sandbox-local, not committed).
+
+**Result: 200/200 succeeded, 0 errors, all within 1.4s wall clock.**
+Cross-checked every entry's cached `voteCount` against the real sum of
+`SUCCEEDED` transactions afterward — exact match on every entry,
+including the one that took 252 of the 200 flows' votes concentrated
+on a single row. No lost updates under contention.
+
+**What this does and doesn't prove**: this validates the app's own
+code path (Next.js + Postgres handling concurrent writes correctly) at
+10x the "200 people" scenario she described. It does **not** test the
+real payment processor under load — the mock provider has no network
+call or rate limit of its own. Once a real processor (Stripe/BBMS) is
+chosen and wired up, repeat a smaller version of this test against it
+specifically — that's the one piece that can't be validated with mock
+payments, and it's the piece she explicitly asked to stress-test.
+
+## Multi-admin logins (2026-10-30)
+
+She wants her own admin login, separate from the developer's, so the
+activity log clearly shows who did what. Built `/admin/users` (visible
+only to `SUPER_ADMIN`, in `AdminNav` as "Admins"): add an admin by
+email + temporary password, remove one later. New admins get
+`MODERATOR` role — full access to moderation/reports/sponsors/
+dashboard, but can't add or remove other admin logins or touch the
+`SUPER_ADMIN` account. Each login goes through the same mandatory
+passkey 2FA enrollment as the original admin did on first sign-in.
+There's still no self-serve password reset or signup — a `SUPER_ADMIN`
+sets the initial password directly and hands it over out of band.

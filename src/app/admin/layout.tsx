@@ -16,7 +16,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   return (
     <div className="flex min-h-full flex-1 flex-col bg-neutral-100">
-      <AdminNav email={admin.email} />
+      <AdminNav email={admin.email} isSuperAdmin={admin.role === "SUPER_ADMIN"} />
       <div className="flex flex-1 flex-col">{children}</div>
     </div>
   );

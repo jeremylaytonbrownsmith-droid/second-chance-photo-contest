@@ -11,8 +11,9 @@ const LINKS = [
   { href: "/admin/activity", label: "Activity" },
 ];
 
-export function AdminNav({ email }: { email: string }) {
+export function AdminNav({ email, isSuperAdmin }: { email: string; isSuperAdmin: boolean }) {
   const pathname = usePathname();
+  const links = isSuperAdmin ? [...LINKS, { href: "/admin/users", label: "Admins" }] : LINKS;
 
   return (
     <header className="sticky top-0 z-50 border-b border-neutral-200 bg-white">
@@ -20,7 +21,7 @@ export function AdminNav({ email }: { email: string }) {
         <div className="flex items-center gap-6">
           <span className="text-sm font-bold tracking-tight text-neutral-900">Admin</span>
           <nav className="flex items-center gap-1">
-            {LINKS.map((link) => {
+            {links.map((link) => {
               const active = pathname === link.href || pathname?.startsWith(`${link.href}/`);
               return (
                 <Link

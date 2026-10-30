@@ -22,6 +22,8 @@ const ACTION_LABELS: Record<string, string> = {
   REPORT_EXPORTED: "Downloaded the entries CSV report",
   SPONSOR_ADDED: "Added a sponsor",
   SPONSOR_REMOVED: "Removed a sponsor",
+  ADMIN_USER_ADDED: "Added an admin login",
+  ADMIN_USER_REMOVED: "Removed an admin login",
 };
 
 const ALERT_ACTIONS = new Set([
