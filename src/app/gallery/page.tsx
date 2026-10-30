@@ -4,6 +4,7 @@ import type { AnimalSpecies } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { listApprovedEntries, type EntrySort } from "@/lib/entries";
 import { theme } from "@/lib/theme";
+import { GalleryPausedNotice } from "@/components/GalleryPausedNotice";
 
 export const dynamic = "force-dynamic";
 
@@ -18,9 +19,9 @@ function isSpecies(value: string | undefined): value is AnimalSpecies {
 export default async function GalleryPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; sort?: string; species?: string }>;
+  searchParams: Promise<{ q?: string; sort?: string; species?: string; reported?: string; error?: string }>;
 }) {
-  const { q, sort: sortParam, species: speciesParam } = await searchParams;
+  const { q, sort: sortParam, species: speciesParam, reported, error } = await searchParams;
   // Defaults to shuffled, not "newest" — the client specifically wanted the
   // gallery to reshuffle on every load like GoGo's "view entries" page did
   // ("Finn was 1st and I just hit refreshed and now Zazzles is 1st"), not
@@ -30,6 +31,14 @@ export default async function GalleryPage({
 
   const contest = await prisma.contest.findFirst({ orderBy: { startsAt: "desc" } });
 
+  if (contest?.galleryPaused) {
+    return (
+      <main className="flex-1 bg-brand-accent px-6 py-12">
+        <GalleryPausedNotice reason={contest.galleryPausedReason} />
+      </main>
+    );
+  }
+
   const entries = contest
     ? await listApprovedEntries({ contestId: contest.id, search: q, sort, species })
     : [];
@@ -37,6 +46,16 @@ export default async function GalleryPage({
   return (
     <main className="flex-1 bg-brand-accent px-6 py-12">
       <div className="mx-auto max-w-6xl">
+        {reported === "1" && (
+          <p className="mb-6 rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-center text-sm text-emerald-800">
+            Thanks — that report has been sent to our moderators and the photo is hidden pending review.
+          </p>
+        )}
+        {error && (
+          <p className="mb-6 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-center text-sm text-red-700">
+            {error}
+          </p>
+        )}
         <div className="mb-8 flex flex-col items-center gap-3 text-center">
           <h1 className="text-3xl font-extrabold tracking-tight text-brand-primary-dark sm:text-4xl">
             Pet Photo Gallery

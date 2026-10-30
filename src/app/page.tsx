@@ -50,6 +50,12 @@ export default async function HomePage() {
 
   return (
     <main className="flex-1 bg-brand-accent">
+      {contest?.galleryPaused && (
+        <div className="border-b border-amber-200 bg-amber-50 px-6 py-3 text-center text-sm text-amber-800">
+          The contest is temporarily paused — new entries and votes aren&apos;t being accepted right now.
+        </div>
+      )}
+
       {/* Hero */}
       <section className="relative overflow-hidden px-6 pb-12 pt-16 text-center">
         <HeroCollage pool={showcaseEntries.map((entry) => ({ id: entry.id, photoUrl: entry.photoUrl }))} />

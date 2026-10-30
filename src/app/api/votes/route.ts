@@ -40,6 +40,9 @@ export async function POST(request: Request) {
   if (!contest) {
     return errorRedirect(entry.slug, "This contest is no longer available");
   }
+  if (contest.galleryPaused) {
+    return errorRedirect(entry.slug, "Voting is temporarily paused — please check back soon");
+  }
 
   const validated = validateCustomVoteCount(votes, contest.votePriceCents);
   if (!validated.ok) {

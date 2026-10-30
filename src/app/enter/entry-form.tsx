@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { resizeImageFile } from "@/lib/resize-image-client";
+import { theme } from "@/lib/theme";
 
 export function EntryForm({ entryFeeCents }: { entryFeeCents: number }) {
   const [preview, setPreview] = useState<string | null>(null);
@@ -158,6 +159,23 @@ export function EntryForm({ entryFeeCents }: { entryFeeCents: number }) {
           <img src={preview} alt="Preview" className="mt-3 h-40 w-40 rounded-lg object-cover shadow-sm" />
         )}
       </div>
+
+      {/* Wording is a draft pending attorney review — see
+          DRAFT_CONTEST_RULES_FOR_ATTORNEY_REVIEW.md. Required regardless,
+          since the record of consent matters independent of the exact
+          phrasing. */}
+      <label className="flex items-start gap-2 text-sm text-neutral-600">
+        <input
+          type="checkbox"
+          name="consent"
+          required
+          className="mt-0.5 h-4 w-4 shrink-0 rounded border-neutral-300 text-brand-primary focus:ring-brand-primary"
+        />
+        <span>
+          I own this photo, it shows my pet, and it contains nothing inappropriate. {theme.org.name} may remove any
+          entry at its discretion.
+        </span>
+      </label>
 
       <button
         type="submit"

@@ -56,6 +56,7 @@ export default async function ReportsPage() {
                     <th className="px-4 py-2 text-right font-medium">Votes</th>
                     <th className="px-4 py-2 text-right font-medium">Raised</th>
                     <th className="px-4 py-2 font-medium">Sharing</th>
+                    <th className="px-4 py-2 font-medium">Kill switch</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-neutral-100">
@@ -93,11 +94,42 @@ export default async function ReportsPage() {
                           <span className="text-xs text-neutral-300">—</span>
                         )}
                       </td>
+                      <td className="px-4 py-2">
+                        {row.status === "APPROVED" || row.status === "REPORTED" ? (
+                          <details className="group">
+                            <summary className="w-fit cursor-pointer list-none whitespace-nowrap rounded-full bg-red-100 px-2.5 py-1 text-xs font-semibold text-red-700 transition-colors duration-150 hover:bg-red-200">
+                              Pull from site
+                            </summary>
+                            <form
+                              action={`/api/admin/entries/${row.entryId}/disqualify`}
+                              method="POST"
+                              className="mt-2 flex flex-wrap items-center gap-2"
+                            >
+                              <input type="hidden" name="redirectTo" value="/admin/reports" />
+                              <input
+                                type="text"
+                                name="reason"
+                                required
+                                placeholder="Reason (required)"
+                                className="w-44 rounded-md border border-neutral-300 px-2 py-1 text-xs focus:border-brand-primary focus:outline-none"
+                              />
+                              <button
+                                type="submit"
+                                className="rounded-md bg-red-600 px-2.5 py-1 text-xs font-medium text-white transition-colors duration-150 hover:bg-red-700"
+                              >
+                                Confirm
+                              </button>
+                            </form>
+                          </details>
+                        ) : (
+                          <span className="text-xs text-neutral-300">—</span>
+                        )}
+                      </td>
                     </tr>
                   ))}
                   {rows.length === 0 && (
                     <tr>
-                      <td colSpan={7} className="px-4 py-8 text-center text-neutral-400">
+                      <td colSpan={8} className="px-4 py-8 text-center text-neutral-400">
                         No entries yet.
                       </td>
                     </tr>

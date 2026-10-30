@@ -25,6 +25,10 @@ const ACTION_LABELS: Record<string, string> = {
   ADMIN_USER_ADDED: "Added an admin login",
   ADMIN_USER_REMOVED: "Removed an admin login",
   PASSWORD_CHANGED: "Changed their own password",
+  ENTRY_DISQUALIFIED: "Pulled an entry from the site",
+  ENTRY_RESTORED: "Restored a reported entry",
+  CONTEST_PAUSED: "Paused the entire contest",
+  CONTEST_RESUMED: "Resumed the contest",
 };
 
 const ALERT_ACTIONS = new Set([
@@ -34,6 +38,8 @@ const ALERT_ACTIONS = new Set([
   "LOGIN_FAILED_UNKNOWN_EMAIL",
   "PASSKEY_REGISTER_FAILED",
   "PASSKEY_LOGIN_FAILED",
+  "ENTRY_DISQUALIFIED",
+  "CONTEST_PAUSED",
   "LOGIN_SUCCESS_MFA_BYPASSED",
 ]);
 

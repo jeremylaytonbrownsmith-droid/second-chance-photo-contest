@@ -1,5 +1,5 @@
 import Image from "next/image";
-import type { AnimalSpecies, Entry } from "@prisma/client";
+import type { AnimalSpecies, Entry, EntryReport } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/admin/auth";
 
@@ -25,12 +25,16 @@ export default async function ModerationPage({
   const { error } = await searchParams;
 
   const contest = await prisma.contest.findFirst({ orderBy: { startsAt: "desc" } });
-  const pending = contest
-    ? await prisma.entry.findMany({
-        where: { contestId: contest.id, status: "PENDING" },
-        orderBy: { createdAt: "asc" },
-      })
-    : [];
+  const [pending, reported] = contest
+    ? await Promise.all([
+        prisma.entry.findMany({ where: { contestId: contest.id, status: "PENDING" }, orderBy: { createdAt: "asc" } }),
+        prisma.entry.findMany({
+          where: { contestId: contest.id, status: "REPORTED" },
+          orderBy: { updatedAt: "asc" },
+          include: { reports: { where: { resolvedAt: null }, orderBy: { createdAt: "asc" } } },
+        }),
+      ])
+    : [[], []];
 
   const groups = GROUP_ORDER.map((group) => ({
     ...group,
@@ -42,7 +46,9 @@ export default async function ModerationPage({
       <div className="mx-auto max-w-3xl">
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-neutral-900">Moderation queue</h1>
-          <p className="text-sm text-neutral-500">{pending.length} pending</p>
+          <p className="text-sm text-neutral-500">
+            {pending.length} pending{reported.length > 0 ? ` · ${reported.length} reported` : ""}
+          </p>
         </div>
 
         {error && (
@@ -51,24 +57,41 @@ export default async function ModerationPage({
 
         {!contest ? (
           <p className="text-neutral-500">No contest is configured.</p>
-        ) : pending.length === 0 ? (
-          <p className="rounded-lg border border-neutral-200 bg-white px-4 py-8 text-center text-sm text-neutral-500">
-            Nothing waiting for review — you&apos;re caught up.
-          </p>
         ) : (
           <div className="space-y-8">
-            {groups.map((group) => (
-              <section key={group.label}>
-                <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-neutral-500">
-                  {group.label} <span className="font-normal text-neutral-400">({group.entries.length})</span>
+            {reported.length > 0 && (
+              <section>
+                <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-red-600">
+                  Reported — hidden from the public site ({reported.length})
                 </h2>
                 <div className="space-y-4">
-                  {group.entries.map((entry) => (
-                    <EntryCard key={entry.id} entry={entry} />
+                  {reported.map((entry) => (
+                    <ReportedEntryCard key={entry.id} entry={entry} />
                   ))}
                 </div>
               </section>
-            ))}
+            )}
+
+            {pending.length === 0 ? (
+              reported.length === 0 && (
+                <p className="rounded-lg border border-neutral-200 bg-white px-4 py-8 text-center text-sm text-neutral-500">
+                  Nothing waiting for review — you&apos;re caught up.
+                </p>
+              )
+            ) : (
+              groups.map((group) => (
+                <section key={group.label}>
+                  <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-neutral-500">
+                    {group.label} <span className="font-normal text-neutral-400">({group.entries.length})</span>
+                  </h2>
+                  <div className="space-y-4">
+                    {group.entries.map((entry) => (
+                      <EntryCard key={entry.id} entry={entry} />
+                    ))}
+                  </div>
+                </section>
+              ))
+            )}
           </div>
         )}
       </div>
@@ -84,6 +107,11 @@ function EntryCard({ entry }: { entry: Entry }) {
       </div>
 
       <div className="min-w-0 flex-1">
+        {entry.moderationFlags && (
+          <p className="mb-1.5 inline-block rounded-full bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-700">
+            ⚠️ Auto-flagged: {entry.moderationFlags.split(",").join(", ").replace(/_/g, " ")}
+          </p>
+        )}
         <p className="font-semibold text-neutral-900">{entry.petName}</p>
         <p className="text-sm text-neutral-500">
           {entry.ownerName} · {entry.ownerEmail}
@@ -127,6 +155,69 @@ function EntryCard({ entry }: { entry: Entry }) {
                 className="rounded-md bg-red-600 px-3 py-1.5 text-sm font-medium text-white transition-colors duration-150 hover:bg-red-700"
               >
                 Confirm reject
+              </button>
+            </form>
+          </details>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ReportedEntryCard({ entry }: { entry: Entry & { reports: EntryReport[] } }) {
+  return (
+    <div className="flex gap-4 rounded-lg border border-red-200 bg-white p-4 shadow-sm">
+      <div className="relative h-28 w-28 shrink-0 overflow-hidden rounded-md bg-neutral-100">
+        <Image src={entry.photoUrl} alt={entry.petName} fill sizes="112px" className="object-cover" />
+      </div>
+
+      <div className="min-w-0 flex-1">
+        <p className="font-semibold text-neutral-900">{entry.petName}</p>
+        <p className="text-sm text-neutral-500">
+          {entry.ownerName} · {entry.ownerEmail}
+        </p>
+
+        <div className="mt-2 space-y-1">
+          {entry.reports.map((report) => (
+            <p key={report.id} className="rounded-md bg-red-50 px-2 py-1 text-xs text-red-800">
+              &ldquo;{report.reason}&rdquo;{" "}
+              <span className="text-red-400">— reported {report.createdAt.toLocaleString()}</span>
+            </p>
+          ))}
+        </div>
+
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          <form action={`/api/admin/entries/${entry.id}/restore`} method="POST">
+            <button
+              type="submit"
+              className="rounded-md bg-emerald-600 px-3 py-1.5 text-sm font-medium text-white transition-colors duration-150 hover:bg-emerald-700"
+            >
+              Restore — report wasn&apos;t valid
+            </button>
+          </form>
+
+          <details className="group">
+            <summary className="cursor-pointer list-none rounded-md border border-red-300 px-3 py-1.5 text-sm font-medium text-red-700 transition-colors duration-150 hover:bg-red-50">
+              Pull permanently
+            </summary>
+            <form
+              action={`/api/admin/entries/${entry.id}/disqualify`}
+              method="POST"
+              className="mt-2 flex flex-wrap items-center gap-2"
+            >
+              <input type="hidden" name="redirectTo" value="/admin/moderation" />
+              <input
+                type="text"
+                name="reason"
+                required
+                placeholder="Reason (required)"
+                className="w-56 rounded-md border border-neutral-300 px-2 py-1.5 text-sm focus:border-brand-primary focus:outline-none"
+              />
+              <button
+                type="submit"
+                className="rounded-md bg-red-600 px-3 py-1.5 text-sm font-medium text-white transition-colors duration-150 hover:bg-red-700"
+              >
+                Confirm
               </button>
             </form>
           </details>

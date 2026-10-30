@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { getLeaderboard, getContestTotals } from "@/lib/entries";
 import { goalProgress } from "@/lib/pricing";
 import { Countdown } from "@/components/Countdown";
+import { GalleryPausedNotice } from "@/components/GalleryPausedNotice";
 
 export const dynamic = "force-dynamic";
 
@@ -28,6 +29,14 @@ export default async function LeaderboardPage({
     return (
       <main className="flex flex-1 items-center justify-center bg-brand-accent px-6 py-16 text-center">
         <p className="text-neutral-500">No contest is configured yet.</p>
+      </main>
+    );
+  }
+
+  if (contest.galleryPaused) {
+    return (
+      <main className="flex-1 bg-brand-accent px-6 py-12">
+        <GalleryPausedNotice reason={contest.galleryPausedReason} />
       </main>
     );
   }

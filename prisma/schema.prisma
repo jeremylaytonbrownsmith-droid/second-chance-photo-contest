@@ -27,6 +27,7 @@ enum EntryStatus {
   APPROVED // live in the public gallery
   REJECTED // moderator rejected — stays in the system, never deleted
   DISQUALIFIED // was live, then pulled — e.g. fraud, rule violation
+  REPORTED // was live, a public report pulled it pending a fresh admin look
 }
 
 // OTHER covers anything beyond cat/dog (the client has run years with
@@ -110,6 +111,14 @@ model Contest {
 
   moderationEnabled Boolean @default(true)
 
+  // Sitewide kill switch — one flip freezes new entries, new votes, and
+  // hides the gallery/leaderboard/pet pages behind a "paused" notice,
+  // without touching any data. For an active incident (bad content live,
+  // payment issue, etc.) where you need everything stopped right now, not
+  // just one photo pulled.
+  galleryPaused       Boolean @default(false)
+  galleryPausedReason String?
+
   prizeText  String? @db.Text
   prizeImage String?
 
@@ -167,6 +176,20 @@ model Entry {
   // the moderation accept/reject that gets it into the gallery at all.
   shareApproved Boolean @default(false)
 
+  // Entrant's upload-time confirmation ("I own this photo, it shows my
+  // pet, nothing inappropriate") — the checkbox wording itself is still
+  // pending attorney review (see DRAFT_CONTEST_RULES_FOR_ATTORNEY_REVIEW.md),
+  // but the record of consent is captured regardless so there's evidence
+  // either way, not assumed from the form having required it.
+  consentConfirmedAt DateTime?
+
+  // Comma-separated flags from the automated image-screening provider
+  // (src/lib/moderation) — e.g. "possible_nudity,no_animal_detected". Null
+  // means not screened (no provider configured) or screening found
+  // nothing. Purely informational for the moderation queue; never used to
+  // auto-publish or auto-reject by itself.
+  moderationFlags String?
+
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
   voidedAt   DateTime?
@@ -175,12 +198,39 @@ model Entry {
   transactions Transaction[]
   freeVotes    FreeVoteLog[]
   fraudFlags   FraudFlag[]
+  reports      EntryReport[]
 
   @@unique([contestId, slug])
   @@index([contestId, status])
   @@index([contestId, voteCount])
   @@index([contestId, status, species])
   @@map("entries")
+}
+
+// ---------------------------------------------------------------------------
+// Public "report this photo" — anyone can flag an entry, no login needed.
+// A report immediately pulls the entry from public view (status →
+// REPORTED) pending a fresh admin decision; it is never auto-deleted or
+// auto-disqualified by a report alone — a human always makes the final
+// call. See CLAUDE.md rule 4: nothing is hard deleted, including a
+// reported entry — "hide, don't delete" covers the worst case (e.g. a
+// NCMEC CyberTipline report needing the original file to still exist).
+// ---------------------------------------------------------------------------
+
+model EntryReport {
+  id      String @id @default(cuid())
+  entryId String
+  entry   Entry  @relation(fields: [entryId], references: [id])
+
+  reason String @db.Text
+
+  resolvedAt DateTime?
+  resolution String? // "restored" | "disqualified", set when an admin acts on it
+
+  createdAt DateTime @default(now())
+
+  @@index([entryId])
+  @@map("entry_reports")
 }
 
 // ---------------------------------------------------------------------------

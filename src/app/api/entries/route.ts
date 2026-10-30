@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { getStorageProvider } from "@/lib/storage";
 import { slugify, uniqueSlugForContest } from "@/lib/entries";
 import { getPaymentProvider } from "@/lib/payments";
+import { getModerationProvider } from "@/lib/moderation";
 import { siteUrl } from "@/lib/site-url";
 
 const MAX_PHOTO_BYTES = 8 * 1024 * 1024; // safety net — the client resizes before upload
@@ -22,6 +23,9 @@ const entrySchema = z.object({
   ownerName: z.string().trim().min(1, "Your name is required").max(120),
   ownerEmail: z.email("Enter a valid email"),
   caption: z.string().trim().max(500).optional().default(""),
+  // HTML checkboxes only send a value when checked — anything other than
+  // "on" means the box was left unchecked.
+  consent: z.literal("on", "You must confirm the photo is yours and appropriate before entering"),
 });
 
 /** Entry submission — creates a PENDING Entry + ENTRY_FEE Transaction, then
@@ -39,6 +43,7 @@ export async function POST(request: Request) {
     ownerName: formData.get("ownerName"),
     ownerEmail: formData.get("ownerEmail"),
     caption: formData.get("caption") ?? "",
+    consent: formData.get("consent"),
   });
   if (!parsed.success) {
     return errorRedirect(parsed.error.issues[0]?.message ?? "Invalid submission");
@@ -59,6 +64,9 @@ export async function POST(request: Request) {
   if (!contest) {
     return errorRedirect("Entries are not open right now");
   }
+  if (contest.galleryPaused) {
+    return errorRedirect("Entries are temporarily paused — please check back soon");
+  }
 
   const { petName, species, rescueSource, ownerName, ownerEmail, caption } = parsed.data;
 
@@ -68,6 +76,19 @@ export async function POST(request: Request) {
     buffer,
     contentType: photo.type,
   });
+
+  // Best-effort — screening never blocks an entry from being submitted,
+  // only adds a visible warning to the moderation queue. A provider
+  // outage shouldn't turn into "nobody can enter the contest."
+  let moderationFlags: string | null = null;
+  try {
+    const result = await getModerationProvider().screenImage(buffer, photo.type);
+    if (result.flagged) moderationFlags = result.flags.join(",");
+  } catch {
+    // Provider not configured, or the request failed — falls through with
+    // no flags, same as if screening found nothing. A human still reviews
+    // every entry in the moderation queue regardless.
+  }
 
   // uniqueSlugForContest checks-then-creates, which isn't atomic — under
   // concurrent submissions for the same pet name (e.g. a launch-day rush),
@@ -84,6 +105,7 @@ export async function POST(request: Request) {
     ownerName,
     ownerEmail,
     photoUrl,
+    moderationFlags,
   });
 
   const transaction = await prisma.transaction.create({
@@ -134,6 +156,7 @@ async function createEntryWithUniqueSlug(input: {
   ownerName: string;
   ownerEmail: string;
   photoUrl: string;
+  moderationFlags: string | null;
 }) {
   for (let attempt = 0; attempt <= MAX_SLUG_RETRIES; attempt += 1) {
     const slug = await uniqueSlugForContest(input.contestId, input.petName);
@@ -150,6 +173,8 @@ async function createEntryWithUniqueSlug(input: {
           photoUrl: input.photoUrl,
           slug,
           status: "PENDING",
+          consentConfirmedAt: new Date(),
+          moderationFlags: input.moderationFlags,
         },
       });
     } catch (error) {

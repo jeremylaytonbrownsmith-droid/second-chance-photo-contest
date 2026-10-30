@@ -316,3 +316,103 @@ set a new starting password via `/admin/users` if someone gets fully
 locked out. That's an acceptable gap for a two-or-three-admin team;
 worth building if the admin roster ever grows past people who can just
 ask each other.
+
+## Content-moderation safety net (2026-10-30)
+
+Client sent a detailed list of what to put in place against a bad photo
+upload — product items to build plus paper/legal items to handle
+separately. Built the product side; left the paper side to her own
+channels (see below).
+
+**Shipped:**
+- **Automated image screening, scaffolded**: `src/lib/moderation/` (same
+  adapter pattern as payments/storage). `NoopModerationProvider` is the
+  default — no real screening happens until a real provider is
+  configured. Built a real `GoogleVisionModerationProvider` (SafeSearch
+  nudity/violence/racy detection via the Cloud Vision REST API with a
+  plain API key, no service account needed) wired in but **untested
+  against the live API — no credentials exist in this environment to
+  verify it end to end.** Needs `MODERATION_PROVIDER=google_vision` +
+  `GOOGLE_VISION_API_KEY` in Vercel, and one real test image, before
+  relying on it. Pet/animal detection (the list's item 2) wasn't built —
+  lower priority than nudity/violence screening, flagged as a fast
+  follow. Screening is best-effort and never blocks a submission; it
+  only adds a warning badge to that entry in the moderation queue
+  (`Entry.moderationFlags`) for a human to see.
+- **Approval friction for flagged images**: partially covered by the
+  above (flags show as a banner on the entry card), but there's no
+  *extra* confirmation step beyond the existing Approve/Reject buttons
+  yet — since no real provider is configured, this hasn't been exercised
+  for real. Worth adding once Vision (or another provider) is actually
+  live and flagging real entries.
+- **Audit log**: already existed (`AdminAuditLog` — who approved what,
+  when). No new work needed here; this item was already covered before
+  this list arrived.
+- **Public report button**: any visitor can report a photo from its pet
+  page (`/pet/{slug}`), no login required. A report immediately pulls
+  the entry from every public page (new `REPORTED` status — reuses the
+  same `status: "APPROVED"` filters everywhere else already uses, so
+  nothing extra had to change to make it disappear from the gallery/
+  leaderboard/homepage/its own page) pending a fresh admin decision. The
+  report reason and timestamp are logged (`EntryReport`) and shown in a
+  new "Reported" section at the top of `/admin/moderation`, with
+  Restore (report wasn't valid) or Pull permanently (→ `DISQUALIFIED`)
+  actions. One known tradeoff, not mitigated: this is a low-friction
+  public action, so it could be used to get a rival's photo hidden with
+  a bogus report — mitigated only slightly by requiring a written
+  reason. Acceptable given it still always resolves to a human decision,
+  not an automatic takedown.
+- **Kill switches, both levels**:
+  - *Per-photo*: `DISQUALIFIED` existed in the schema since the
+    original build but was never wired to anything — no code set it.
+    Now live from two places: the Reports page (any `APPROVED`/
+    `REPORTED` entry, "Pull from site") and the moderation queue's
+    Reported section. Requires a reason, logged, entry/votes/
+    transactions all stay in the database (never deleted).
+  - *Sitewide*: new `Contest.galleryPaused` flag, toggled from
+    `/admin/dashboard`. Blocks new entries and all three voting paths
+    (paid, free-vote request, and — since free-vote confirm can't be
+    reached without request succeeding — free-vote confirm too) at the
+    API level, not just hidden in the UI, and shows a paused notice on
+    the gallery, leaderboard, and every pet page. Verified: while
+    paused, `/api/entries` and `/api/votes` both reject with a clear
+    error even if called directly.
+- **Upload consent checkbox**: required checkbox on the entry form ("I
+  own this photo, it shows my pet, and it contains nothing
+  inappropriate..."), enforced server-side (`entrySchema` rejects
+  submission without it) in addition to the HTML `required` attribute.
+  `Entry.consentConfirmedAt` records when, independent of the UI
+  requiring it — verified both that an unchecked submission is rejected
+  and that a checked one persists the timestamp. **Wording is a draft**,
+  not attorney-reviewed — flagged in both the code comment and
+  `DRAFT_CONTEST_RULES_FOR_ATTORNEY_REVIEW.md`.
+- **CSAM handling — documented, not new code**: this app already never
+  hard-deletes anything (CLAUDE.md rule 4 — soft delete only,
+  everywhere, no exceptions in the admin UI), so "hide, don't delete"
+  for a worst-case upload is already how the system behaves by default,
+  not something that needed building. What's worth making sure the
+  admin team actually knows: if something that bad ever shows up, it
+  must be reported to NCMEC's CyberTipline
+  (report.cybertip.org / 1-800-843-5678), and the file must **not** be
+  deleted even after reporting — use the kill switch (hides it
+  immediately) and leave the underlying record alone. This is
+  operational knowledge for whoever's moderating, not a rule the code
+  enforces.
+- Verified against the real DB (not just typecheck/lint/build): report
+  → hide → restore, kill switch → hide (checked the pet page 404s),
+  sitewide pause → gallery/leaderboard/pet-page notice + blocked
+  submission, consent checkbox rejected/accepted correctly. Re-ran the
+  200-concurrent vote load test from the scaling section above against
+  the updated code — still 200/200, 0 failures, vote counts still
+  exactly matched the transaction sum afterward. All 18 existing unit
+  tests still pass.
+
+**Not built — these are the client's own channels, not ours to draft**:
+- Signing as the LLC instead of personally, the services
+  agreement/indemnification clause with Second Chance, and E&O
+  insurance are all business/legal decisions for the client's own
+  attorney (not Julie's — she represents the nonprofit, a different
+  party with different interests than the client's LLC). Happy to draft
+  a plain-English discussion starting point for that attorney if asked,
+  the same way `DRAFT_CONTEST_RULES_FOR_ATTORNEY_REVIEW.md` was built
+  for Julie's side — just hasn't been asked for yet.

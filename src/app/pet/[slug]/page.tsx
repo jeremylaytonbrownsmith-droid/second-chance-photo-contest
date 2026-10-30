@@ -12,6 +12,7 @@ import { ShareButtons } from "./share-buttons";
 import { ShareQrCode } from "./share-qr-code";
 import { VoteForm } from "./vote-form";
 import { FreeVoteForm } from "./free-vote-form";
+import { ReportPhoto } from "./report-photo";
 
 async function loadEntry(slug: string) {
   const contest = await prisma.contest.findFirst({ orderBy: { startsAt: "desc" } });
@@ -150,29 +151,39 @@ export default async function PetPage({
                 <ShareQrCode petName={entry.petName} dataUrl={qrDataUrl} />
               </div>
             )}
+
+            <ReportPhoto entryId={entry.id} entrySlug={entry.slug} />
           </div>
         </div>
 
-        {contest?.freeVoteEnabled && (
-          <div className="mt-6">
-            <FreeVoteForm
-              entryId={entry.id}
-              entrySlug={entry.slug}
-              step={freeVoteStep === "code" ? "code" : "email"}
-              prefillEmail={freeVoteEmail}
-            />
-          </div>
-        )}
+        {contest?.galleryPaused ? (
+          <p className="mt-6 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-center text-sm text-amber-800">
+            Voting is temporarily paused — please check back soon.
+          </p>
+        ) : (
+          <>
+            {contest?.freeVoteEnabled && (
+              <div className="mt-6">
+                <FreeVoteForm
+                  entryId={entry.id}
+                  entrySlug={entry.slug}
+                  step={freeVoteStep === "code" ? "code" : "email"}
+                  prefillEmail={freeVoteEmail}
+                />
+              </div>
+            )}
 
-        {contest && votePackages.length > 0 && (
-          <div className="mt-6">
-            <VoteForm
-              entryId={entry.id}
-              entrySlug={entry.slug}
-              votePriceCents={contest.votePriceCents}
-              packages={votePackages}
-            />
-          </div>
+            {contest && votePackages.length > 0 && (
+              <div className="mt-6">
+                <VoteForm
+                  entryId={entry.id}
+                  entrySlug={entry.slug}
+                  votePriceCents={contest.votePriceCents}
+                  packages={votePackages}
+                />
+              </div>
+            )}
+          </>
         )}
       </div>
     </main>

@@ -1,3 +1,4 @@
+import type { Contest } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/admin/auth";
 import { getDashboardStats } from "@/lib/admin/dashboard";
@@ -28,6 +29,8 @@ export default async function AdminDashboardPage() {
           <h1 className="text-2xl font-bold text-neutral-900">Dashboard</h1>
           <p className="text-sm text-neutral-500">{contest ? contest.name : "No contest is configured."}</p>
         </div>
+
+        {contest && <ContestKillSwitch contest={contest} />}
 
         {!stats ? (
           <p className="text-neutral-500">No contest is configured.</p>
@@ -63,6 +66,58 @@ export default async function AdminDashboardPage() {
         )}
       </div>
     </main>
+  );
+}
+
+function ContestKillSwitch({ contest }: { contest: Contest }) {
+  if (contest.galleryPaused) {
+    return (
+      <section className="mb-6 rounded-xl border border-amber-300 bg-amber-50 p-4">
+        <p className="text-sm font-semibold text-amber-900">⏸ Contest is paused</p>
+        {contest.galleryPausedReason && <p className="mt-0.5 text-xs text-amber-700">{contest.galleryPausedReason}</p>}
+        <p className="mt-1 text-xs text-amber-700">
+          New entries, votes, and the public gallery/leaderboard are all blocked right now.
+        </p>
+        <form action="/api/admin/contest/pause" method="POST" className="mt-3">
+          <input type="hidden" name="paused" value="0" />
+          <button
+            type="submit"
+            className="rounded-md bg-emerald-600 px-3 py-1.5 text-sm font-medium text-white transition-colors duration-150 hover:bg-emerald-700"
+          >
+            Resume contest
+          </button>
+        </form>
+      </section>
+    );
+  }
+
+  return (
+    <section className="mb-6 rounded-xl border border-neutral-200 bg-white p-4 shadow-sm">
+      <details>
+        <summary className="cursor-pointer text-sm font-medium text-neutral-600">
+          Kill switch — pause the entire contest
+        </summary>
+        <form action="/api/admin/contest/pause" method="POST" className="mt-3 flex flex-wrap items-center gap-2">
+          <input type="hidden" name="paused" value="1" />
+          <input
+            type="text"
+            name="reason"
+            placeholder="Reason (optional, shown to visitors)"
+            className="w-64 rounded-md border border-neutral-300 px-2 py-1.5 text-sm focus:border-brand-primary focus:outline-none"
+          />
+          <button
+            type="submit"
+            className="rounded-md bg-red-600 px-3 py-1.5 text-sm font-medium text-white transition-colors duration-150 hover:bg-red-700"
+          >
+            Pause everything now
+          </button>
+        </form>
+        <p className="mt-2 text-xs text-neutral-400">
+          Blocks new entries and votes, and shows a paused notice on the gallery, leaderboard, and every pet page.
+          Nothing is deleted — flip it back on any time.
+        </p>
+      </details>
+    </section>
   );
 }
 

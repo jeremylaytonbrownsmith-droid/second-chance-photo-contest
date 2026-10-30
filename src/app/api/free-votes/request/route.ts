@@ -46,6 +46,9 @@ export async function POST(request: Request) {
   if (!contest || !contest.freeVoteEnabled) {
     return errorRedirect(entrySlug, "Free voting isn't available for this contest");
   }
+  if (contest.galleryPaused) {
+    return errorRedirect(entrySlug, "Voting is temporarily paused — please check back soon");
+  }
 
   const alreadyVotedToday = await prisma.freeVoteLog.findUnique({
     where: {
