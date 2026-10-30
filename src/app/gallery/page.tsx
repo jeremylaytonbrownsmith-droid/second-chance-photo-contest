@@ -15,8 +15,6 @@ function isSpecies(value: string | undefined): value is AnimalSpecies {
   return value === "DOG" || value === "CAT" || value === "OTHER";
 }
 
-const SPECIES_LABELS: Record<AnimalSpecies, string> = { DOG: "Dogs", CAT: "Cats", OTHER: "Other" };
-
 export default async function GalleryPage({
   searchParams,
 }: {
@@ -108,16 +106,14 @@ export default async function GalleryPage({
                     sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw"
                     className="object-cover object-top transition-transform duration-300 group-hover:scale-110"
                   />
-                  {entry.species && (
-                    <span className="absolute left-2 top-2 rounded-full bg-white/90 px-2 py-0.5 text-[11px] font-semibold text-brand-primary-dark shadow-sm">
-                      {SPECIES_LABELS[entry.species].replace(/s$/, "")}
-                    </span>
-                  )}
                 </div>
                 <div className="p-3">
                   <p className="truncate text-base font-bold tracking-tight text-neutral-900 transition-colors duration-200 group-hover:text-brand-primary">
                     {entry.petName}
                   </p>
+                  {entry.rescueSource && (
+                    <p className="truncate text-xs text-neutral-400">From {entry.rescueSource}</p>
+                  )}
                   <p className="text-xs font-medium text-neutral-500">{entry.voteCount.toLocaleString()} votes</p>
                 </div>
               </Link>

@@ -120,8 +120,13 @@ export default async function LeaderboardPage({
                         className="object-cover object-top transition-transform duration-300 group-hover:scale-110"
                       />
                     </div>
-                    <span className="flex-1 truncate text-base font-bold tracking-tight text-neutral-900 transition-colors duration-200 group-hover:text-brand-primary">
-                      {entry.petName}
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-base font-bold tracking-tight text-neutral-900 transition-colors duration-200 group-hover:text-brand-primary">
+                        {entry.petName}
+                      </span>
+                      {entry.rescueSource && (
+                        <span className="block truncate text-xs text-neutral-400">From {entry.rescueSource}</span>
+                      )}
                     </span>
                     <span className="shrink-0 text-sm font-semibold text-brand-primary">
                       {entry.voteCount.toLocaleString()} votes
@@ -141,8 +146,13 @@ export default async function LeaderboardPage({
                         className="group flex items-center gap-3 px-4 py-2 text-sm transition-colors duration-150 hover:bg-brand-accent"
                       >
                         <span className="w-6 shrink-0 text-neutral-400">{index + 11}</span>
-                        <span className="flex-1 truncate font-semibold text-neutral-800 transition-colors duration-150 group-hover:text-brand-primary">
-                          {entry.petName}
+                        <span className="min-w-0 flex-1">
+                          <span className="block truncate font-semibold text-neutral-800 transition-colors duration-150 group-hover:text-brand-primary">
+                            {entry.petName}
+                          </span>
+                          {entry.rescueSource && (
+                            <span className="block truncate text-xs text-neutral-400">From {entry.rescueSource}</span>
+                          )}
                         </span>
                         <span className="shrink-0 text-neutral-500">{entry.voteCount.toLocaleString()} votes</span>
                       </Link>
