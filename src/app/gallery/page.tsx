@@ -63,6 +63,10 @@ export default async function GalleryPage({
             placeholder="Search by pet or owner name"
             className="w-64 rounded-md border border-neutral-300 px-3 py-2 text-sm transition-colors duration-150 focus:border-brand-primary focus:outline-none"
           />
+          {/* No "Other" option — she confirmed on the call this year is
+              cats and dogs only. isSpecies() still accepts OTHER so a
+              stale/shared link with ?species=OTHER degrades to an empty
+              result instead of a crash, not because it's offered here. */}
           <select
             name="species"
             defaultValue={species ?? ""}
@@ -71,7 +75,6 @@ export default async function GalleryPage({
             <option value="">All pets</option>
             <option value="DOG">Dogs</option>
             <option value="CAT">Cats</option>
-            <option value="OTHER">Other</option>
           </select>
           <select
             name="sort"

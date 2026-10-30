@@ -167,6 +167,15 @@ doing" request:
   two loads with no query string returned different first entries).
   "Newest"/"Most votes" are still there in the dropdown for anyone who
   wants a stable order.
+- **Cats and dogs only, this year** — caught on a follow-up ("remember
+  she said there's only cats and dogs"), confirmed in the transcript:
+  "I was a little conflicted this year... but you know, 2nd chance is
+  cats and dogs." The entry form's Pet type select and the gallery/
+  leaderboard species filters no longer offer "Other." `AnimalSpecies`
+  keeps the `OTHER` enum value in the schema (no migration needed) for
+  history and in case a future year reopens it — only the new-entry
+  path (form + `entrySchema` in `src/app/api/entries/route.ts`) is
+  restricted to DOG/CAT.
 
 **Deferred — client call items not yet started**, each with what it's
 blocked on:

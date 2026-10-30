@@ -57,12 +57,12 @@ export default async function LeaderboardPage({
               Back to the gallery
             </span>
           </Link>
+          {/* No "Other" pill — cats and dogs only this year, per the call. */}
           <div className="flex flex-wrap items-center justify-center gap-2">
             {([
               [undefined, "All pets"],
               ["DOG", "Dogs"],
               ["CAT", "Cats"],
-              ["OTHER", "Other"],
             ] as const).map(([value, label]) => (
               <Link
                 key={label}

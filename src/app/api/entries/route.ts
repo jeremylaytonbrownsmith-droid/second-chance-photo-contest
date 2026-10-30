@@ -9,9 +9,15 @@ import { siteUrl } from "@/lib/site-url";
 
 const MAX_PHOTO_BYTES = 8 * 1024 * 1024; // safety net — the client resizes before upload
 
+// DOG/CAT only — she was explicit on the call that this year is cats and
+// dogs ("I was a little conflicted... but you know, 2nd chance is cats and
+// dogs"), after running other-animal years in the past. AnimalSpecies still
+// has an OTHER value in the schema/filters for that history and for a
+// future year she opens it back up — this just keeps new entries from
+// picking it while it's off.
 const entrySchema = z.object({
   petName: z.string().trim().min(1, "Pet name is required").max(80),
-  species: z.enum(["DOG", "CAT", "OTHER"], "Select a pet type"),
+  species: z.enum(["DOG", "CAT"], "Select a pet type"),
   rescueSource: z.string().trim().max(120).optional().default(""),
   ownerName: z.string().trim().min(1, "Your name is required").max(120),
   ownerEmail: z.email("Enter a valid email"),
@@ -122,7 +128,7 @@ const MAX_SLUG_RETRIES = 3;
 async function createEntryWithUniqueSlug(input: {
   contestId: string;
   petName: string;
-  species: "DOG" | "CAT" | "OTHER";
+  species: "DOG" | "CAT";
   rescueSource: string | null;
   caption: string;
   ownerName: string;

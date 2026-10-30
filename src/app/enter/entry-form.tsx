@@ -80,7 +80,6 @@ export function EntryForm({ entryFeeCents }: { entryFeeCents: number }) {
           </option>
           <option value="DOG">Dog</option>
           <option value="CAT">Cat</option>
-          <option value="OTHER">Other</option>
         </select>
       </div>
 
