@@ -302,5 +302,17 @@ email + temporary password, remove one later. New admins get
 dashboard, but can't add or remove other admin logins or touch the
 `SUPER_ADMIN` account. Each login goes through the same mandatory
 passkey 2FA enrollment as the original admin did on first sign-in.
-There's still no self-serve password reset or signup — a `SUPER_ADMIN`
-sets the initial password directly and hands it over out of band.
+
+**Follow-up, same day**: the client asked a sharp question — if she
+can't change the temporary password, that means texting a password
+around forever. Fixed with self-serve password changes:
+`/admin/account` (linked from the admin's own email in the top-right
+nav), requires the current password to set a new one, logs
+`PASSWORD_CHANGED`. The flow now: a `SUPER_ADMIN` sets a *starting*
+password and shares it once, the new admin signs in and changes it to
+something only they know. Still no self-serve *reset* for a forgotten
+password or signup/invite email — a `SUPER_ADMIN` would still need to
+set a new starting password via `/admin/users` if someone gets fully
+locked out. That's an acceptable gap for a two-or-three-admin team;
+worth building if the admin roster ever grows past people who can just
+ask each other.

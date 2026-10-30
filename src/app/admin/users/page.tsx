@@ -60,7 +60,8 @@ export default async function AdminUsersPage({
             </div>
             <div>
               <label htmlFor="password" className="mb-1 block text-xs font-medium text-neutral-600">
-                Temporary password (they can&apos;t change it yet — share this with them directly)
+                Starting password (share this with them directly — they can change it themselves after
+                signing in, under their email in the top right)
               </label>
               <input
                 id="password"

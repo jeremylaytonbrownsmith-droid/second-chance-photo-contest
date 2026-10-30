@@ -39,7 +39,13 @@ export function AdminNav({ email, isSuperAdmin }: { email: string; isSuperAdmin:
         </div>
 
         <div className="flex shrink-0 items-center gap-3">
-          <span className="hidden truncate text-xs text-neutral-400 sm:inline">{email}</span>
+          <Link
+            href="/admin/account"
+            className="hidden truncate text-xs text-neutral-400 underline-offset-2 transition-colors duration-150 hover:text-brand-primary hover:underline sm:inline"
+            title="Change your password"
+          >
+            {email}
+          </Link>
           <form action="/api/admin/logout" method="POST">
             <button
               type="submit"

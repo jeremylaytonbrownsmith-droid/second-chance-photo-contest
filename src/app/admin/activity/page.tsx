@@ -24,6 +24,7 @@ const ACTION_LABELS: Record<string, string> = {
   SPONSOR_REMOVED: "Removed a sponsor",
   ADMIN_USER_ADDED: "Added an admin login",
   ADMIN_USER_REMOVED: "Removed an admin login",
+  PASSWORD_CHANGED: "Changed their own password",
 };
 
 const ALERT_ACTIONS = new Set([
