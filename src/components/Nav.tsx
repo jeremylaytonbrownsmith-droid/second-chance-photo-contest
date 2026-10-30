@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { theme } from "@/lib/theme";
 
 const NAV_LINKS = [
@@ -14,6 +15,12 @@ const NAV_LINKS = [
 
 export function Nav() {
   const [open, setOpen] = useState(false);
+  const pathname = usePathname();
+
+  // The admin portal has its own dedicated nav (AdminNav) — showing both
+  // here was exactly the cluttered-navigation complaint this was meant to
+  // fix.
+  if (pathname?.startsWith("/admin")) return null;
 
   return (
     <header className="sticky top-0 z-50 border-b border-neutral-200 bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/70">

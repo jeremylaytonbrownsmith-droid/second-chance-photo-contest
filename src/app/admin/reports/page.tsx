@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/admin/auth";
 import { getEntryReportRows } from "@/lib/admin/reports";
@@ -6,7 +5,7 @@ import { getEntryReportRows } from "@/lib/admin/reports";
 export const dynamic = "force-dynamic";
 
 export default async function ReportsPage() {
-  const admin = await requireAdmin();
+  await requireAdmin();
 
   const contest = await prisma.contest.findFirst({ orderBy: { startsAt: "desc" } });
   const rows = contest ? await getEntryReportRows(contest.id) : [];
@@ -18,24 +17,13 @@ export default async function ReportsPage() {
     <main className="flex-1 bg-neutral-100 px-6 py-10">
       <div className="mx-auto max-w-5xl">
         <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="min-w-0">
-            <h1 className="text-2xl font-bold text-neutral-900">Reports</h1>
-            <p className="truncate text-sm text-neutral-500">Signed in as {admin.email}</p>
-          </div>
-          <div className="flex shrink-0 flex-wrap items-center gap-2">
-            <Link
-              href="/admin/moderation"
-              className="whitespace-nowrap rounded-md border border-neutral-300 px-3 py-1.5 text-sm font-medium text-neutral-600 transition-colors duration-150 hover:bg-white"
-            >
-              Moderation
-            </Link>
-            <a
-              href="/api/admin/reports/export"
-              className="whitespace-nowrap rounded-md bg-brand-primary px-3 py-1.5 text-sm font-medium text-white transition-colors duration-150 hover:bg-brand-primary-dark"
-            >
-              Download CSV
-            </a>
-          </div>
+          <h1 className="text-2xl font-bold text-neutral-900">Reports</h1>
+          <a
+            href="/api/admin/reports/export"
+            className="w-fit whitespace-nowrap rounded-md bg-brand-primary px-3 py-1.5 text-sm font-medium text-white transition-colors duration-150 hover:bg-brand-primary-dark"
+          >
+            Download CSV
+          </a>
         </div>
 
         {!contest ? (

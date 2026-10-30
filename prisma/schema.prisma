@@ -325,6 +325,27 @@ model AdminAuditLog {
 }
 
 // ---------------------------------------------------------------------------
+// Visit tracking — answers the admin dashboard's "how many people have
+// been on the site today" without wiring up the Google Analytics Data API
+// (which needs client-supplied credentials we don't have). One row per
+// (day, anonymous visitor cookie) — the unique constraint itself is the
+// dedup, so repeat visits the same day are a no-op upsert, not double
+// counted. No IP, no user agent, no page path — just enough to count
+// people, not to profile them.
+// ---------------------------------------------------------------------------
+
+model PageVisit {
+  id        String   @id @default(cuid())
+  visitorId String
+  day       String // YYYY-MM-DD (UTC)
+  createdAt DateTime @default(now())
+
+  @@unique([day, visitorId])
+  @@index([day])
+  @@map("page_visits")
+}
+
+// ---------------------------------------------------------------------------
 // Fraud tooling — flags for review, not automatic blocks (a human decides).
 // ---------------------------------------------------------------------------
 

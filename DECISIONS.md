@@ -190,6 +190,38 @@ sponsor logos, treasurer's payment-method preference, and GoGo report
 examples the client offered to send over (may usefully shape the
 `/admin/reports` columns further once seen).
 
+## Admin dashboard + navigation (2026-10-30)
+
+Client asked directly to simplify the admin navigation and add a
+dashboard ("how many people have been on that day"), which traces back
+to the call transcript: she wanted an admin dashboard with more
+clarity on daily activity, and mentioned Google Analytics / Tag
+Manager as how she'd get visitor numbers elsewhere.
+
+- **Navigation**: `/admin/*` now shares one nav (`AdminNav` via
+  `src/app/admin/layout.tsx`) — Dashboard / Moderation / Reports /
+  Activity, with the signed-in email and sign-out always in the same
+  place. Each page previously built its own header with a different
+  subset of links; those are gone, replaced by the shared nav. The
+  public marketing nav (`Nav.tsx`) is now hidden on `/admin/*` — the
+  two navs stacked on every admin page was a real source of the
+  "cluttered" feeling, not just inconsistent links.
+- **Dashboard** (`/admin/dashboard`, `src/lib/admin/dashboard.ts`) —
+  today's visitors/new entries/votes/raised, all-time totals, and a
+  14-day visitor bar chart. `/admin` now redirects here instead of
+  straight to moderation.
+- **Visitor counting, specifically**: there's no Google Analytics Data
+  API credentials on hand to pull real GA numbers into our own admin
+  (that needs a service account + property ID from the client's GA,
+  which was never requested). Instead, added a minimal first-party
+  counter: `PageVisit` model, an anonymous httpOnly cookie (no IP, no
+  user agent, no page path — just enough to dedupe a person per day),
+  and a `VisitTracker` client component mounted site-wide except on
+  `/admin/*` (so the admin's own usage doesn't inflate "people on the
+  site"). If the client later wants this to actually be Google
+  Analytics data instead, that's a credentials ask, not a rebuild — the
+  dashboard's visitor card is isolated enough to swap the data source.
+
 **Testing expectation, stated directly on the call**: before real
 launch she wants "pretty heavy duty testing," explicitly naming the
 payment-platform integration and the failure mode she's afraid of —

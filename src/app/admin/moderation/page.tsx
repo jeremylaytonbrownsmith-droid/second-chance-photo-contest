@@ -1,5 +1,4 @@
 import Image from "next/image";
-import Link from "next/link";
 import type { AnimalSpecies, Entry } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/admin/auth";
@@ -22,7 +21,7 @@ export default async function ModerationPage({
 }: {
   searchParams: Promise<{ error?: string }>;
 }) {
-  const admin = await requireAdmin();
+  await requireAdmin();
   const { error } = await searchParams;
 
   const contest = await prisma.contest.findFirst({ orderBy: { startsAt: "desc" } });
@@ -41,35 +40,9 @@ export default async function ModerationPage({
   return (
     <main className="flex-1 bg-neutral-100 px-6 py-10">
       <div className="mx-auto max-w-3xl">
-        <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="min-w-0">
-            <h1 className="text-2xl font-bold text-neutral-900">Moderation queue</h1>
-            <p className="truncate text-sm text-neutral-500">
-              Signed in as {admin.email} · {pending.length} pending
-            </p>
-          </div>
-          <div className="flex shrink-0 items-center gap-2">
-            <Link
-              href="/admin/reports"
-              className="whitespace-nowrap rounded-md border border-neutral-300 px-3 py-1.5 text-sm font-medium text-neutral-600 transition-colors duration-150 hover:bg-white"
-            >
-              Reports
-            </Link>
-            <Link
-              href="/admin/activity"
-              className="whitespace-nowrap rounded-md border border-neutral-300 px-3 py-1.5 text-sm font-medium text-neutral-600 transition-colors duration-150 hover:bg-white"
-            >
-              Activity log
-            </Link>
-            <form action="/api/admin/logout" method="POST">
-              <button
-                type="submit"
-                className="whitespace-nowrap rounded-md border border-neutral-300 px-3 py-1.5 text-sm font-medium text-neutral-600 transition-colors duration-150 hover:bg-white"
-              >
-                Sign out
-              </button>
-            </form>
-          </div>
+        <div className="mb-8">
+          <h1 className="text-2xl font-bold text-neutral-900">Moderation queue</h1>
+          <p className="text-sm text-neutral-500">{pending.length} pending</p>
         </div>
 
         {error && (

@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/admin/auth";
 import { formatRelativeTime } from "@/lib/format-relative-time";
@@ -32,7 +31,7 @@ const ALERT_ACTIONS = new Set([
 ]);
 
 export default async function AdminActivityPage() {
-  const admin = await requireAdmin();
+  await requireAdmin();
 
   const logs = await prisma.adminAuditLog.findMany({
     orderBy: { createdAt: "desc" },
@@ -42,17 +41,9 @@ export default async function AdminActivityPage() {
   return (
     <main className="flex-1 bg-neutral-100 px-6 py-10">
       <div className="mx-auto max-w-3xl">
-        <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="min-w-0">
-            <h1 className="text-2xl font-bold text-neutral-900">Admin activity</h1>
-            <p className="truncate text-sm text-neutral-500">Signed in as {admin.email} · last 100 events</p>
-          </div>
-          <Link
-            href="/admin/moderation"
-            className="shrink-0 whitespace-nowrap rounded-md border border-neutral-300 px-3 py-1.5 text-sm font-medium text-neutral-600 transition-colors duration-150 hover:bg-white"
-          >
-            Back to moderation
-          </Link>
+        <div className="mb-8">
+          <h1 className="text-2xl font-bold text-neutral-900">Admin activity</h1>
+          <p className="text-sm text-neutral-500">Last 100 events</p>
         </div>
 
         {logs.length === 0 ? (
