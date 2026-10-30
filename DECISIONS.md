@@ -328,23 +328,32 @@ channels (see below).
 - **Automated image screening, scaffolded**: `src/lib/moderation/` (same
   adapter pattern as payments/storage). `NoopModerationProvider` is the
   default — no real screening happens until a real provider is
-  configured. Built a real `GoogleVisionModerationProvider` (SafeSearch
-  nudity/violence/racy detection via the Cloud Vision REST API with a
-  plain API key, no service account needed) wired in but **untested
-  against the live API — no credentials exist in this environment to
-  verify it end to end.** Needs `MODERATION_PROVIDER=google_vision` +
-  `GOOGLE_VISION_API_KEY` in Vercel, and one real test image, before
-  relying on it. Pet/animal detection (the list's item 2) wasn't built —
-  lower priority than nudity/violence screening, flagged as a fast
-  follow. Screening is best-effort and never blocks a submission; it
-  only adds a warning badge to that entry in the moderation queue
-  (`Entry.moderationFlags`) for a human to see.
+  configured. Two real providers built:
+  - `GoogleVisionModerationProvider` — SafeSearch nudity/violence/racy
+    detection via the Cloud Vision REST API with a plain API key, no
+    service account needed. Only covers nudity/violence, not the "is
+    this actually a pet" check (the list's item 2).
+  - `ClaudeModerationProvider` (2026-10-30, client chose this one after
+    comparing setup effort — roughly equal either way) — one Claude
+    vision call covers *both* nudity/violence and the pet check in a
+    single request, asked to respond with strict JSON
+    (`{"nudity","violence","containsPet"}`) and parsed defensively
+    (markdown-fence stripping, safe defaults if a field is missing).
+    Uses `claude-haiku-5-5` directly via the Messages API (no SDK
+    dependency, same plain-`fetch` style as the other providers).
+  Both are **untested against their live APIs — no credentials exist in
+  this environment to verify either end to end.** Set
+  `MODERATION_PROVIDER=claude` + `ANTHROPIC_API_KEY` (or `google_vision`
+  + `GOOGLE_VISION_API_KEY`) in Vercel, and run one real test image,
+  before relying on either. Screening is best-effort and never blocks a
+  submission; it only adds a warning badge to that entry in the
+  moderation queue (`Entry.moderationFlags`) for a human to see.
 - **Approval friction for flagged images**: partially covered by the
   above (flags show as a banner on the entry card), but there's no
   *extra* confirmation step beyond the existing Approve/Reject buttons
   yet — since no real provider is configured, this hasn't been exercised
-  for real. Worth adding once Vision (or another provider) is actually
-  live and flagging real entries.
+  for real. Worth adding once a provider is actually live and flagging
+  real entries.
 - **Audit log**: already existed (`AdminAuditLog` — who approved what,
   when). No new work needed here; this item was already covered before
   this list arrived.
