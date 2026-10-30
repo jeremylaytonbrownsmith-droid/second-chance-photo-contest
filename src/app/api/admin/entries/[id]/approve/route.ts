@@ -18,9 +18,16 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   // updateMany (not update) so this is a no-op instead of an error if the
   // entry was already handled — e.g. a double click, or two admins acting
   // on the same queue at once.
+  //
+  // shareApproved flips on here too — the share buttons/QR code are just a
+  // convenience wrapper around a URL that's already public the moment an
+  // entry is APPROVED (anyone can copy it straight out of the gallery), so
+  // gating them separately added an admin step without actually protecting
+  // anything. An admin can still revoke sharing for a specific entry later
+  // from the Reports page's Sharing column if a real reason comes up.
   const result = await prisma.entry.updateMany({
     where: { id, status: "PENDING" },
-    data: { status: "APPROVED", moderationNote: note },
+    data: { status: "APPROVED", moderationNote: note, shareApproved: true },
   });
 
   if (result.count > 0) {

@@ -153,14 +153,23 @@ doing" request:
   sponsors and six smaller sponsors"). No real sponsor logos exist yet
   so the homepage section just stays hidden until the client adds one —
   nothing was faked to fill the space.
-- **QR code + admin sharing approval**, resolved as admin-gated, not
-  default-on: re-reading the transcript, she described this as an
-  "accept/reject" step an admin does on the back end before a pet's
-  share buttons + QR code go live — not opt-out. `Entry.shareApproved`
-  (default false), a toggle in the Reports table's new Sharing column,
-  and the QR code itself (`qrcode` npm package, generated server-side
-  as a data URL — no dependency on a third-party QR image API staying
-  up) now show on `/pet/{slug}` only once approved there.
+- **QR code + sharing** — ~~initially built admin-gated~~ **changed to
+  automatic on 2026-10-30**, after the client questioned the point of a
+  separate approval step. Correct call: an entry's page is already
+  public and copy-pasteable the moment it's APPROVED, so gating only
+  the share buttons/QR code behind a second admin click didn't protect
+  anything — it just added busywork and slowed down the viral sharing
+  that's the actual point of the feature. `src/app/api/admin/entries/
+  [id]/approve/route.ts` now sets `shareApproved: true` in the same
+  update as the approval itself; migration
+  `20261030022953_backfill_share_approved` turned it on retroactively
+  for entries already approved before this change. The Reports page's
+  Sharing column/toggle stays as a manual **revoke** option — an admin
+  can still turn sharing off for one specific entry without pulling the
+  whole thing from the gallery, which is a real use case the toggle
+  being present already covers at no extra cost. QR codes are generated
+  server-side with the `qrcode` npm package as a data URL, not a
+  third-party image API call.
 - **Gallery randomize-on-refresh** — default sort is now `random`
   instead of `newest` when no `sort` is in the URL, so the gallery
   reshuffles on every load the way she described GoGo doing (verified:
