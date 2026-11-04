@@ -280,14 +280,14 @@ export default async function HomePage() {
             {sponsors.featured.length > 0 && (
               <div className="mb-8 flex flex-wrap items-center justify-center gap-8">
                 {sponsors.featured.map((sponsor) => (
-                  <SponsorLogo key={sponsor.id} name={sponsor.name} logoUrl={sponsor.logoUrl} linkUrl={sponsor.linkUrl} size={96} />
+                  <SponsorLogo key={sponsor.id} name={sponsor.name} logoUrl={sponsor.logoUrl} linkUrl={sponsor.linkUrl} size={140} />
                 ))}
               </div>
             )}
             {sponsors.supporter.length > 0 && (
               <div className="flex flex-wrap items-center justify-center gap-6">
                 {sponsors.supporter.map((sponsor) => (
-                  <SponsorLogo key={sponsor.id} name={sponsor.name} logoUrl={sponsor.logoUrl} linkUrl={sponsor.linkUrl} size={56} />
+                  <SponsorLogo key={sponsor.id} name={sponsor.name} logoUrl={sponsor.logoUrl} linkUrl={sponsor.linkUrl} size={96} />
                 ))}
               </div>
             )}
