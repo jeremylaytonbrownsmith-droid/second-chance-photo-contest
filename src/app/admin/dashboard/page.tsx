@@ -25,20 +25,20 @@ export default async function AdminDashboardPage() {
   return (
     <main className="flex-1 bg-neutral-100 px-6 py-10">
       <div className="mx-auto max-w-5xl">
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-neutral-900">Dashboard</h1>
+        <div className="mb-5">
+          <h1 className="text-xl font-bold text-neutral-900">Dashboard</h1>
           <p className="text-sm text-neutral-500">{contest ? contest.name : "No contest is configured."}</p>
         </div>
 
-        {contest && <ContestKillSwitch contest={contest} />}
+        {contest && <ContestPauseControl contest={contest} />}
 
         {!stats ? (
           <p className="text-neutral-500">No contest is configured.</p>
         ) : (
           <>
-            <section className="mb-6">
-              <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-neutral-400">Today</h2>
-              <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+            <section className="mb-4">
+              <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-neutral-400">Today</h2>
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                 <StatCard label="Visitors" value={stats.visitorsToday.toLocaleString()} />
                 <StatCard label="New entries" value={stats.entriesToday.toLocaleString()} />
                 <StatCard label="Votes cast" value={stats.votesToday.toLocaleString()} />
@@ -46,9 +46,9 @@ export default async function AdminDashboardPage() {
               </div>
             </section>
 
-            <section className="mb-6">
-              <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-neutral-400">All time</h2>
-              <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+            <section className="mb-4">
+              <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-neutral-400">All time</h2>
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                 <TrendStatCard
                   label="Total entries"
                   value={stats.totalEntries.toLocaleString()}
@@ -73,8 +73,8 @@ export default async function AdminDashboardPage() {
               </div>
             </section>
 
-            <section className="rounded-xl border border-neutral-200 bg-white p-5 shadow-sm">
-              <h2 className="mb-4 text-xs font-semibold uppercase tracking-wide text-neutral-400">
+            <section className="rounded-xl border border-neutral-200 bg-white p-4 shadow-sm">
+              <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-neutral-400">
                 Visitors — last 14 days
               </h2>
               <VisitorTrendChart trend={stats.visitorTrend} />
@@ -86,16 +86,16 @@ export default async function AdminDashboardPage() {
   );
 }
 
-function ContestKillSwitch({ contest }: { contest: Contest }) {
+function ContestPauseControl({ contest }: { contest: Contest }) {
   if (contest.galleryPaused) {
     return (
-      <section className="mb-6 rounded-xl border border-amber-300 bg-amber-50 p-4">
+      <section className="mb-4 rounded-xl border border-amber-300 bg-amber-50 p-3">
         <p className="text-sm font-semibold text-amber-900">⏸ Contest is paused</p>
         {contest.galleryPausedReason && <p className="mt-0.5 text-xs text-amber-700">{contest.galleryPausedReason}</p>}
         <p className="mt-1 text-xs text-amber-700">
           New entries, votes, and the public gallery/leaderboard are all blocked right now.
         </p>
-        <form action="/api/admin/contest/pause" method="POST" className="mt-3">
+        <form action="/api/admin/contest/pause" method="POST" className="mt-2">
           <input type="hidden" name="paused" value="0" />
           <button
             type="submit"
@@ -109,11 +109,9 @@ function ContestKillSwitch({ contest }: { contest: Contest }) {
   }
 
   return (
-    <section className="mb-6 rounded-xl border border-neutral-200 bg-white p-4 shadow-sm">
+    <section className="mb-4 rounded-xl border border-neutral-200 bg-white p-3 shadow-sm">
       <details>
-        <summary className="cursor-pointer text-sm font-medium text-neutral-600">
-          Kill switch — pause the entire contest
-        </summary>
+        <summary className="cursor-pointer text-sm font-medium text-neutral-600">Pause controls</summary>
         <form action="/api/admin/contest/pause" method="POST" className="mt-3 flex flex-wrap items-center gap-2">
           <input type="hidden" name="paused" value="1" />
           <input

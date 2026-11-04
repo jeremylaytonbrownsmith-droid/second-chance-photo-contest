@@ -4,7 +4,7 @@ import { getAdminFromSession } from "@/lib/admin/auth";
 import { logAdminAction } from "@/lib/admin/audit";
 import { siteUrl } from "@/lib/site-url";
 
-/** The per-photo kill switch — pulls any live entry (APPROVED or
+/** The per-photo takedown — pulls any live entry (APPROVED or
  * REPORTED) from public view immediately. Never deletes it (CLAUDE.md
  * rule 4) — the photo, the entry, every vote and transaction on it stays
  * in the database, just no longer publicly visible. */

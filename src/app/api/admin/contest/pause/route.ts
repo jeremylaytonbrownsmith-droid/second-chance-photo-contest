@@ -4,7 +4,7 @@ import { getAdminFromSession } from "@/lib/admin/auth";
 import { logAdminAction } from "@/lib/admin/audit";
 import { siteUrl } from "@/lib/site-url";
 
-/** The sitewide kill switch — pauses/resumes new entries, votes, and the
+/** The sitewide pause control — pauses/resumes new entries, votes, and the
  * public gallery/leaderboard/pet pages in one action, for an active
  * incident where you need everything stopped right now. Operates on the
  * most recent contest, same "there's one current contest" assumption the

@@ -274,11 +274,11 @@ export default async function HomePage() {
 
       {/* Sponsors */}
       {(sponsors.featured.length > 0 || sponsors.supporter.length > 0) && (
-        <section className="border-t border-neutral-200 bg-brand-accent px-6 py-14">
+        <section className="border-t border-neutral-200 bg-brand-accent px-6 py-6">
           <div className="mx-auto max-w-4xl text-center">
-            <h2 className="mb-8 text-xl font-semibold text-brand-primary-dark">Thanks to our sponsors</h2>
+            <h2 className="mb-3 text-xl font-semibold text-brand-primary-dark">Thanks to our sponsors</h2>
             {sponsors.featured.length > 0 && (
-              <div className="mb-8 flex flex-wrap items-center justify-center gap-8">
+              <div className="mb-3 flex flex-wrap items-center justify-center gap-8">
                 {sponsors.featured.map((sponsor) => (
                   <SponsorLogo key={sponsor.id} name={sponsor.name} logoUrl={sponsor.logoUrl} linkUrl={sponsor.linkUrl} size={140} />
                 ))}

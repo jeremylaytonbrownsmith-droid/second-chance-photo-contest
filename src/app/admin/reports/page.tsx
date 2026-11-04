@@ -56,7 +56,7 @@ export default async function ReportsPage() {
                     <th className="px-4 py-2 text-right font-medium">Votes</th>
                     <th className="px-4 py-2 text-right font-medium">Raised</th>
                     <th className="px-4 py-2 font-medium">Sharing</th>
-                    <th className="px-4 py-2 font-medium">Kill switch</th>
+                    <th className="px-4 py-2 font-medium">Takedown</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-neutral-100">

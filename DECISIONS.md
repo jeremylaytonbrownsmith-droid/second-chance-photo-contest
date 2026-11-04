@@ -537,3 +537,40 @@ that the pet page no longer renders free-vote copy and that
 test from the scaling section above against the updated code — still
 200/200, 0 failures, every entry's vote count still exactly matched its
 transaction sum afterward.
+
+## "Kill switch" wording removed; dashboard made more compact (2026-11-04)
+
+Per the client: this is a dog/cat rescue, and "kill switch" is not
+language we want anywhere in the admin, even as an internal label on a
+pause/takedown feature. No behavior changed — these are rename-only
+edits:
+
+- `src/app/admin/dashboard/page.tsx` — the `ContestKillSwitch` component
+  is now `ContestPauseControl`; its collapsed `<summary>` text changed
+  from "Kill switch — pause the entire contest" to "Pause controls".
+- `src/app/admin/reports/page.tsx` — the per-entry table column header
+  changed from "Kill switch" to "Takedown" (matches the existing "Pull
+  from site" button text in that column).
+- `src/app/api/admin/contest/pause/route.ts` and
+  `src/app/api/admin/entries/[id]/disqualify/route.ts` — internal doc
+  comments reworded ("sitewide pause control" / "per-photo takedown")
+  for consistency with the UI; these were never user-facing.
+
+Also tightened up the dashboard's spacing per the client's "make it a
+little more compact" ask: reduced section/card margins and gaps
+(`mb-6`/`mb-8` → `mb-4`/`mb-5`, `gap-4` → `gap-3`), smaller page heading,
+and a shorter visitor-trend chart. No data, layout structure, or stat
+calculations changed — purely tighter whitespace.
+
+**Verified**: typecheck, lint, and all 18 unit tests clean on a fresh
+build; confirmed visually via Playwright (virtual WebAuthn authenticator
+to get past passkey login) that the dashboard renders "Pause controls"
+and more compact spacing, and that the Reports table shows "Takedown".
+`grep -rniI "kill switch\|killswitch" src` returns nothing.
+
+Also tightened the public homepage's "Thanks to our sponsors" section
+(`src/app/page.tsx`) per the same compacting feedback — the section was
+too tall: `py-14` → `py-6`, heading `mb-8` → `mb-3`, featured-row
+`mb-8` → `mb-3`. Verified visually by temporarily un-voiding the local
+test sponsor record, screenshotting, then re-voiding it immediately
+after — no lasting change to local data.
