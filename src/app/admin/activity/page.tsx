@@ -20,6 +20,7 @@ const ACTION_LABELS: Record<string, string> = {
   ENTRY_SHARE_APPROVED: "Approved social sharing for an entry",
   ENTRY_SHARE_REVOKED: "Revoked social sharing for an entry",
   REPORT_EXPORTED: "Downloaded the entries CSV report",
+  DONOR_REPORT_EXPORTED: "Downloaded the donor/voter emails CSV report",
   SPONSOR_ADDED: "Added a sponsor",
   SPONSOR_REMOVED: "Removed a sponsor",
   ADMIN_USER_ADDED: "Added an admin login",

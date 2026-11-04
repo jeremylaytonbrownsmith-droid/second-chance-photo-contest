@@ -18,12 +18,21 @@ export default async function ReportsPage() {
       <div className="mx-auto max-w-5xl">
         <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <h1 className="text-2xl font-bold text-neutral-900">Reports</h1>
-          <a
-            href="/api/admin/reports/export"
-            className="w-fit whitespace-nowrap rounded-md bg-brand-primary px-3 py-1.5 text-sm font-medium text-white transition-colors duration-150 hover:bg-brand-primary-dark"
-          >
-            Download CSV
-          </a>
+          <div className="flex flex-wrap gap-2">
+            <a
+              href="/api/admin/reports/export"
+              className="w-fit whitespace-nowrap rounded-md bg-brand-primary px-3 py-1.5 text-sm font-medium text-white transition-colors duration-150 hover:bg-brand-primary-dark"
+            >
+              Download CSV
+            </a>
+            <a
+              href="/api/admin/reports/export-donors"
+              title="Everyone who entered a pet and/or bought votes, one row per email"
+              className="w-fit whitespace-nowrap rounded-md border border-brand-primary px-3 py-1.5 text-sm font-medium text-brand-primary transition-colors duration-150 hover:bg-brand-accent"
+            >
+              Download donor emails
+            </a>
+          </div>
         </div>
 
         {!contest ? (

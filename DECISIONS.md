@@ -600,3 +600,33 @@ straight to the rescue."
 clean; confirmed visually that the sponsors section now ends right
 after the logo with no stretched gap, and that the updated "Collect
 votes" copy renders correctly.
+
+## Donor/voter email export added (2026-11-04)
+
+The client asked whether Julie can pull a list of everyone who's given
+money — not just pet entrants (already covered by the existing Reports
+CSV) — so she can email them herself from her own tools. That list
+didn't exist as an export before now.
+
+Added a second CSV export, **Reports → "Download donor emails"**:
+- `getDonorReportRows` / `donorReportToCsv` in `src/lib/admin/reports.ts`
+  — groups every `SUCCEEDED` transaction (entry fees and vote
+  purchases) by donor email, not by name, since email is the actual
+  contact point. Each row: name (most recent on file), email, number
+  of gifts, total given, first gift date, most recent gift date.
+  Sorted by total given, highest first.
+- New route `src/app/api/admin/reports/export-donors/route.ts`,
+  same auth/audit pattern as the existing entries export
+  (`REPORT_EXPORTED`'s sibling action is `DONOR_REPORT_EXPORTED`,
+  labeled on the Activity page).
+- Button added next to the existing "Download CSV" on the Reports
+  page — doesn't touch or change that existing export.
+
+No schema changes — this reads data that was already being collected
+on every vote/entry purchase (`Transaction.donorEmail`), just never
+surfaced as its own report before.
+
+**Verified**: typecheck, lint, all 18 unit tests, and a fresh build
+clean; logged in as admin and fetched the new endpoint directly against
+local dev data — 200 response, correct CSV with 8 distinct donor
+emails, gift counts, and totals matching the underlying transactions.
