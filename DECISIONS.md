@@ -574,3 +574,29 @@ too tall: `py-14` → `py-6`, heading `mb-8` → `mb-3`, featured-row
 `mb-8` → `mb-3`. Verified visually by temporarily un-voiding the local
 test sponsor record, screenshotting, then re-voiding it immediately
 after — no lasting change to local data.
+
+A follow-up look at a live screenshot showed what still read as a huge
+blank gap below the sponsor logos. The actual cause: the homepage's
+`<main>` wrapper had `flex-1 bg-brand-accent`, so on any page shorter
+than the viewport it stretched to fill the remaining height with the
+same pink background as the sponsors section — making empty viewport
+space look like part of the section. Removed `flex-1` from that one
+`<main>` (homepage only; shared layout/nav untouched) so the page is
+only as tall as its content; any leftover viewport space now falls
+back to the body's own background instead of bleeding pink.
+
+Also caught and fixed a real miss from the free-vote removal
+(2026-11-04 above): the homepage's "How it works" step 2 copy still
+read "one free vote a day, or vote packs for those who want to go all
+in" — leftover free-vote copy that should have been removed with
+everything else. Re-audited the whole codebase for any other leftover
+"free vote" / "no purchase necessary" user-facing copy — grep came back
+clean (only internal comments referencing historical `FreeVoteLog`
+data remain, which is correct). Changed the copy to: "Friends and
+family buy votes for your pet — pick a vote pack and every dollar goes
+straight to the rescue."
+
+**Verified**: typecheck, lint, all 18 unit tests, and a fresh build
+clean; confirmed visually that the sponsors section now ends right
+after the logo with no stretched gap, and that the updated "Collect
+votes" copy renders correctly.

@@ -18,7 +18,7 @@ const STEPS = [
   },
   {
     title: "Collect votes",
-    body: "Friends and family vote for your pet — one free vote a day, or vote packs for those who want to go all in.",
+    body: "Friends and family buy votes for your pet — pick a vote pack and every dollar goes straight to the rescue.",
   },
   {
     title: "Win prizes",
@@ -49,7 +49,7 @@ export default async function HomePage() {
   const progress = contest ? goalProgress(totals.raisedCents, contest.goalCents) : null;
 
   return (
-    <main className="flex-1 bg-brand-accent">
+    <main className="bg-brand-accent">
       {contest?.galleryPaused && (
         <div className="border-b border-amber-200 bg-amber-50 px-6 py-3 text-center text-sm text-amber-800">
           The contest is temporarily paused — new entries and votes aren&apos;t being accepted right now.
