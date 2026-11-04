@@ -29,6 +29,7 @@ const ACTION_LABELS: Record<string, string> = {
   ENTRY_RESTORED: "Restored a reported entry",
   CONTEST_PAUSED: "Paused the entire contest",
   CONTEST_RESUMED: "Resumed the contest",
+  CONTEST_SETTINGS_UPDATED: "Updated contest settings",
 };
 
 const ALERT_ACTIONS = new Set([

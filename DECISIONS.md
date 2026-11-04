@@ -425,3 +425,67 @@ channels (see below).
   a plain-English discussion starting point for that attorney if asked,
   the same way `DRAFT_CONTEST_RULES_FOR_ATTORNEY_REVIEW.md` was built
   for Julie's side — just hasn't been asked for yet.
+
+## Claude-based moderation chosen; dashboard + settings page (2026-11-04)
+
+Client picked the Claude provider (both already built, setup effort is
+roughly the same either way) — needs `ANTHROPIC_API_KEY` to actually turn
+on, still unset as of this writing.
+
+**IMPORTANT — flagged, not yet resolved**: Julie emailed "Let's remove
+this" about the free-vote block, with **no mention of attorney
+confirmation** — doesn't reference the draft rules doc, doesn't say a
+lawyer reviewed it, reads like an ordinary product comment. Per the
+standing rule above ("do not disable the free vote toggle... until this
+is confirmed in writing"), **the free-vote toggle has NOT been touched**.
+Client was asked directly whether the attorney actually confirmed this
+separately — waiting on that answer before doing anything here. Do not
+remove free voting on the strength of that email alone, even if a future
+message references it in passing, unless written attorney confirmation
+is actually shown.
+
+**Shipped — dashboard upgrades**, prompted by a reference screenshot of
+another platform's admin dashboard (GetMatchReady, an NCYSA referee
+training tool — used only as a visual/UX reference, unrelated product):
+- Weekly delta ("▲/▼ N this week", comparing the trailing 7 days to the
+  7 before that) + a 14-day sparkline, added to the Total entries/Total
+  votes/Total raised cards. Daily series are bucketed in JS from raw
+  rows (`src/lib/admin/dashboard.ts`) rather than a SQL date_trunc
+  groupBy — fine at contest scale, revisit if that stops being true.
+- The "Pending review" card now reads as an alert, not just a number —
+  "all caught up" in green when nothing's waiting, or the oldest
+  pending entry's age in amber once something's sat for 24h+. This is
+  this app's real equivalent of the reference's "Overdue" card — there's
+  no learner-deadline concept here, but a photo nobody's looked at in
+  two days is the actual thing worth surfacing.
+- Deliberately did **not** copy the reference's monthly chart or
+  registered-learner-style funnel cards — a multi-week contest doesn't
+  have enough data for monthly granularity, and inventing funnel stages
+  that don't exist here would be decoration, not information.
+
+**Shipped — `/admin/settings`**, directly from Julie's "In GoGo, I was
+able to change settings" comment (screenshot showed GoGo's full admin
+settings menu — Dates, Voting Options, Entry Fields, Email Templates,
+Sponsor Logos, etc.). Built what we actually have fields for, not
+GoGo's whole menu: contest name, start/end dates (shown and edited in
+UTC, labeled as such — datetime-local inputs have no timezone of their
+own, and guessing the admin's local zone silently was worse than being
+explicit), entry fee, price per vote, fundraising goal, the moderation
+on/off toggle, and prize text. Open to any admin, not just
+`SUPER_ADMIN` — Julie is a `MODERATOR` and this is exactly the kind of
+day-to-day control she asked for; only `/admin/users` (managing other
+admin logins) stays super-admin-only.
+
+Deliberately **not** included in this first version:
+- **Vote packages** (`votePackagesJson`) — the $5/$10/$25 buttons.
+  Editing this safely needs its own small UI (add/remove a package,
+  not a raw JSON textarea that could break checkout if malformed) —
+  noted in the form itself so it's not a silent gap.
+- **`freeVoteEnabled`** — left out on purpose, not an oversight. Making
+  this a one-click settings toggle would undercut the whole point of
+  the standing legal guard above.
+- **`prizeImage`** — exists in the schema but nothing in the app
+  actually reads it yet (checked); not worth building a field for data
+  nothing displays.
+- **`galleryPaused`** — already has its own dedicated kill-switch UI on
+  the dashboard; didn't duplicate the control here.

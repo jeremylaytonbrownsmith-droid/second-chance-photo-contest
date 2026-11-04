@@ -49,10 +49,27 @@ export default async function AdminDashboardPage() {
             <section className="mb-6">
               <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-neutral-400">All time</h2>
               <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-                <StatCard label="Total entries" value={stats.totalEntries.toLocaleString()} />
-                <StatCard label="Pending review" value={stats.pendingModeration.toLocaleString()} />
-                <StatCard label="Total votes" value={stats.totalVotes.toLocaleString()} />
-                <StatCard label="Total raised" value={money(stats.totalRaisedCents)} accent />
+                <TrendStatCard
+                  label="Total entries"
+                  value={stats.totalEntries.toLocaleString()}
+                  weekDelta={stats.entriesWeekDelta}
+                  trend={stats.entriesTrend}
+                />
+                <PendingReviewCard pendingCount={stats.pendingModeration} oldestHours={stats.pendingOldestHours} />
+                <TrendStatCard
+                  label="Total votes"
+                  value={stats.totalVotes.toLocaleString()}
+                  weekDelta={stats.votesWeekDelta}
+                  trend={stats.votesTrend}
+                />
+                <TrendStatCard
+                  label="Total raised"
+                  value={money(stats.totalRaisedCents)}
+                  weekDelta={stats.raisedCentsWeekDelta}
+                  trend={stats.raisedCentsTrend}
+                  formatDelta={(n) => money(n)}
+                  accent
+                />
               </div>
             </section>
 
@@ -128,6 +145,85 @@ function StatCard({ label, value, accent = false }: { label: string; value: stri
         {value}
       </p>
       <p className="mt-0.5 text-xs font-medium text-neutral-500">{label}</p>
+    </div>
+  );
+}
+
+function TrendStatCard({
+  label,
+  value,
+  weekDelta,
+  trend,
+  accent = false,
+  formatDelta = (n: number) => n.toLocaleString(),
+}: {
+  label: string;
+  value: string;
+  weekDelta: number;
+  trend: number[];
+  accent?: boolean;
+  formatDelta?: (n: number) => string;
+}) {
+  return (
+    <div className="rounded-xl border border-neutral-200 bg-white p-4 shadow-sm">
+      <div className="flex items-start justify-between gap-2">
+        <p className={`text-2xl font-bold tracking-tight ${accent ? "text-brand-primary" : "text-neutral-900"}`}>
+          {value}
+        </p>
+        {weekDelta !== 0 && (
+          <span
+            className={`shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${
+              weekDelta > 0 ? "bg-emerald-100 text-emerald-700" : "bg-neutral-100 text-neutral-500"
+            }`}
+          >
+            {weekDelta > 0 ? "▲" : "▼"} {formatDelta(Math.abs(weekDelta))} this week
+          </span>
+        )}
+      </div>
+      <p className="mt-0.5 text-xs font-medium text-neutral-500">{label}</p>
+      <Sparkline trend={trend} accent={accent} />
+    </div>
+  );
+}
+
+function Sparkline({ trend, accent = false }: { trend: number[]; accent?: boolean }) {
+  const max = Math.max(1, ...trend);
+  return (
+    <div className="mt-2 flex h-6 items-end gap-0.5">
+      {trend.map((value, i) => (
+        <div
+          key={i}
+          className={`flex-1 rounded-sm ${accent ? "bg-brand-primary/40" : "bg-neutral-300"}`}
+          style={{ height: `${Math.max(8, (value / max) * 100)}%` }}
+        />
+      ))}
+    </div>
+  );
+}
+
+function PendingReviewCard({ pendingCount, oldestHours }: { pendingCount: number; oldestHours: number | null }) {
+  const stale = oldestHours !== null && oldestHours >= 24;
+
+  return (
+    <div
+      className={`rounded-xl border p-4 shadow-sm ${stale ? "border-amber-300 bg-amber-50" : "border-neutral-200 bg-white"}`}
+    >
+      <div className="flex items-start justify-between gap-2">
+        <p className={`text-2xl font-bold tracking-tight ${stale ? "text-amber-900" : "text-neutral-900"}`}>
+          {pendingCount.toLocaleString()}
+        </p>
+        {!stale && (
+          <span className="shrink-0 rounded-full bg-emerald-100 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700">
+            all caught up
+          </span>
+        )}
+      </div>
+      <p className={`mt-0.5 text-xs font-medium ${stale ? "text-amber-700" : "text-neutral-500"}`}>Pending review</p>
+      {stale && (
+        <p className="mt-2 text-[11px] text-amber-700">
+          Oldest waiting {oldestHours! >= 48 ? `${Math.floor(oldestHours! / 24)}d` : `${oldestHours}h`}
+        </p>
+      )}
     </div>
   );
 }
