@@ -81,7 +81,6 @@ export async function getDashboardStats(contestId: string): Promise<DashboardSta
     visitorsToday,
     entriesToday,
     votePurchasesToday,
-    freeVotesToday,
     raisedToday,
     totalEntries,
     pendingModeration,
@@ -91,7 +90,6 @@ export async function getDashboardStats(contestId: string): Promise<DashboardSta
     visitRows,
     entriesInWindow,
     votePurchasesInWindow,
-    freeVotesInWindow,
     transactionsInWindow,
   ] = await Promise.all([
     prisma.pageVisit.count({ where: { day: today } }),
@@ -100,7 +98,6 @@ export async function getDashboardStats(contestId: string): Promise<DashboardSta
       where: { contestId, type: "VOTE_PURCHASE", status: "SUCCEEDED", createdAt: { gte: startOfToday } },
       _sum: { voteQuantity: true },
     }),
-    prisma.freeVoteLog.count({ where: { contestId, votedOn: startOfToday } }),
     prisma.transaction.aggregate({
       where: { contestId, status: "SUCCEEDED", createdAt: { gte: startOfToday } },
       _sum: { amountCents: true },
@@ -108,6 +105,9 @@ export async function getDashboardStats(contestId: string): Promise<DashboardSta
     prisma.entry.count({ where: { contestId, voidedAt: null } }),
     prisma.entry.count({ where: { contestId, status: "PENDING" } }),
     prisma.entry.findFirst({ where: { contestId, status: "PENDING" }, orderBy: { createdAt: "asc" } }),
+    // voteCount includes historical free votes (see recomputeVoteCount in
+    // lib/entries.ts) — free voting is retired, but past free votes still
+    // count toward each entry's total, so this cumulative sum is untouched.
     prisma.entry.aggregate({ where: { contestId, voidedAt: null }, _sum: { voteCount: true } }),
     prisma.transaction.aggregate({ where: { contestId, status: "SUCCEEDED" }, _sum: { amountCents: true } }),
     prisma.pageVisit.groupBy({ by: ["day"], where: { day: { gte: trendStartDay } }, _count: { _all: true } }),
@@ -122,10 +122,6 @@ export async function getDashboardStats(contestId: string): Promise<DashboardSta
     prisma.transaction.findMany({
       where: { contestId, type: "VOTE_PURCHASE", status: "SUCCEEDED", createdAt: { gte: trendStart } },
       select: { createdAt: true, voteQuantity: true },
-    }),
-    prisma.freeVoteLog.findMany({
-      where: { contestId, votedOn: { gte: trendStart } },
-      select: { votedOn: true },
     }),
     prisma.transaction.findMany({
       where: { contestId, status: "SUCCEEDED", createdAt: { gte: trendStart } },
@@ -147,11 +143,10 @@ export async function getDashboardStats(contestId: string): Promise<DashboardSta
     startOfToday,
   );
 
-  const voteDayValues = [
-    ...votePurchasesInWindow.map((t) => ({ day: dayString(t.createdAt), value: t.voteQuantity ?? 0 })),
-    ...freeVotesInWindow.map((v) => ({ day: dayString(v.votedOn), value: 1 })),
-  ];
-  const votesTrend = bucketDaily(voteDayValues, startOfToday);
+  const votesTrend = bucketDaily(
+    votePurchasesInWindow.map((t) => ({ day: dayString(t.createdAt), value: t.voteQuantity ?? 0 })),
+    startOfToday,
+  );
 
   const raisedCentsTrend = bucketDaily(
     transactionsInWindow.map((t) => ({ day: dayString(t.createdAt), value: t.amountCents })),
@@ -165,7 +160,7 @@ export async function getDashboardStats(contestId: string): Promise<DashboardSta
   return {
     visitorsToday,
     entriesToday,
-    votesToday: (votePurchasesToday._sum.voteQuantity ?? 0) + freeVotesToday,
+    votesToday: votePurchasesToday._sum.voteQuantity ?? 0,
     raisedTodayCents: raisedToday._sum.amountCents ?? 0,
     totalEntries,
     pendingModeration,

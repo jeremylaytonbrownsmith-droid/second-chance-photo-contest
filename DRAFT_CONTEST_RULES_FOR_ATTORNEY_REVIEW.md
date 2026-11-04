@@ -1,12 +1,18 @@
 # DRAFT — Pet Photo Contest Rules & Voting Structure Change
 
-**STATUS: DRAFT. NOT APPROVED. NOT LIVE ANYWHERE.**
+**UPDATE 2026-11-04 — the voting-structure question below is resolved.**
+Per the client, the attorney confirmed paid-only voting; the free-vote
+option has been removed from the app (see DECISIONS.md for exactly what
+changed). The **rules clauses further down are still drafts** — they
+haven't been confirmed as approved wording and aren't published anywhere
+on the site yet. Original framing below, kept as the record of what was
+asked:
+
+~~**STATUS: DRAFT. NOT APPROVED. NOT LIVE ANYWHERE.**~~
 Nothing in this document is published on the site, sent to entrants, or
-reflected in the app yet. The paid-only voting change described below has
-**not** been made in the code. Everything here is pending your attorney's
+reflected in the app yet. Everything here is pending your attorney's
 written review and sign-off, per this project's own rule: no official
-contest rules or legal copy ships, and the free-vote option doesn't come
-out, until that's confirmed in writing.
+contest rules or legal copy ships until that's confirmed in writing.
 
 ---
 

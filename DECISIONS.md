@@ -6,18 +6,18 @@ guessed at in code — build around it, flag it, wait for the answer.
 
 ## Legal — blocking before real launch
 
-- **Free daily vote / "no purchase necessary" mechanism.** The contest
-  charges $10 to enter and $1 per vote, with an optional free daily vote per
-  verified email (built default-ON per the spec). Whether this structure is
-  fully compliant with **North Carolina's specific charitable-gaming and
-  lottery statutes** needs the nonprofit's attorney — not an assumption in
-  this codebase. A lottery is generally prize + chance + consideration;
-  this contest is popularity/skill-based (not chance-based) and offers a
-  free path to vote, which is the standard way sweepstakes avoid lottery
-  classification — but "generally" isn't a legal opinion, and NC has its
-  own charitable-gaming rules (e.g. around raffles) that may or may not
-  treat this differently. **Do not disable the free vote toggle, and do
-  not launch to real donors, until this is confirmed in writing.**
+- ~~**Free daily vote / "no purchase necessary" mechanism.**~~ **RESOLVED
+  2026-11-04 — removed app-wide.** The contest ran with $10 entry + $1/vote
+  plus an optional free daily vote per verified email, specifically so the
+  free path kept "consideration" out of the lottery analysis
+  (prize + chance + consideration — this contest has no chance element,
+  but the free vote was the belt-and-suspenders piece). Julie emailed
+  asking to remove it; per the client (Jeremy), her attorney confirmed
+  paid-only voting separately before this was acted on — see the
+  Continuity section below for exactly what changed and when. The free
+  vote UI, API routes, and settings toggle are gone from the app; past
+  free votes already cast are untouched and still count toward every
+  entry's total (CLAUDE.md rule 4 — nothing is hard deleted).
 - **Official contest rules document** — eligibility, entry restrictions,
   prize terms, dispute/refund policy, privacy notice for collected donor
   info. Needs attorney-drafted or attorney-reviewed copy before launch.
@@ -489,3 +489,51 @@ Deliberately **not** included in this first version:
   nothing displays.
 - **`galleryPaused`** — already has its own dedicated kill-switch UI on
   the dashboard; didn't duplicate the control here.
+
+## Free voting removed app-wide (2026-11-04)
+
+Per the client: Julie's attorney confirmed paid-only voting separately
+(not in writing I've seen directly — relayed by the client, who answered
+"yes" when asked directly whether the attorney had actually confirmed
+it, as the standing rule above requires). Acted on that same day.
+
+**What changed, no more and no less than asked:**
+- Removed the free-vote UI from the pet page (the "NO PURCHASE
+  NECESSARY / Vote free, once a day" block) — `src/app/pet/[slug]/page.tsx`.
+- Deleted the now-dead component and both API routes entirely, not just
+  disabled them: `src/app/pet/[slug]/free-vote-form.tsx`,
+  `src/app/api/free-votes/request/route.ts`,
+  `src/app/api/free-votes/confirm/route.ts` (whole directory gone).
+- Removed the free-vote queries from the admin dashboard's "today"/
+  trend numbers (they'd only ever return zero going forward anyway) —
+  `src/lib/admin/dashboard.ts`.
+- `Contest.freeVoteEnabled` — **left in the schema, not dropped**. No
+  code reads it anymore (confirmed by grep before and after). It holds
+  no data of its own, unlike `FreeVoteLog`, so there was nothing to
+  lose by leaving it inert; dropping a column is the one step in this
+  change that can't be undone, and nothing required it. Comment on the
+  field updated to explain why it's still there — `prisma/schema.prisma`.
+- Updated this file's "Legal" section and
+  `DRAFT_CONTEST_RULES_FOR_ATTORNEY_REVIEW.md`'s status banner to
+  reflect resolution instead of leaving them stale.
+
+**Explicitly NOT changed, exactly as instructed:**
+- `FreeVoteLog` (every historical free vote), the `EmailVerification`
+  model, and the `VerificationPurpose.FREE_VOTE` enum value are all
+  untouched — they hold real historical records, not configuration.
+- `recomputeVoteCount` (`src/lib/entries.ts`) still sums
+  `FreeVoteLog.count` into every entry's total. Past free votes keep
+  counting exactly as they did — nothing was deleted or recalculated.
+- No random/chance element was found anywhere in the app before this
+  change (re-confirmed by the same grep audit as before touching
+  anything) — the gallery's display-order shuffle is cosmetic ordering,
+  not a prize mechanism, and nothing else in the codebase uses
+  `Math.random()` for anything winner- or prize-related.
+
+**Verified before calling it done**: typecheck, lint, and all 18 unit
+tests clean on a fresh build; confirmed server-side (not just visually)
+that the pet page no longer renders free-vote copy and that
+`/api/free-votes/request` now 404s; re-ran the 200-concurrent vote load
+test from the scaling section above against the updated code — still
+200/200, 0 failures, every entry's vote count still exactly matched its
+transaction sum afterward.

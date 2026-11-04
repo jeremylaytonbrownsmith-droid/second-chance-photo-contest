@@ -100,9 +100,13 @@ model Contest {
 
   goalCents Int @default(5000000) // $50,000, matches the prior GoGo result
 
-  // No-purchase-necessary safeguard — see CLAUDE.md rule 7/8. Defaults ON;
-  // do not flip this off without a logged, deliberate, legally-reviewed
-  // decision.
+  // RETIRED 2026-11-04 — free voting was removed app-wide after the
+  // client's attorney confirmed paid-only voting is fine (no chance
+  // element; see DECISIONS.md). No code reads this field anymore. Left in
+  // the schema rather than dropped: it holds no data of its own (unlike
+  // FreeVoteLog, which keeps every historical free vote and is untouched),
+  // so there's nothing to lose by leaving it inert, and dropping a column
+  // is the one step here that can't be undone.
   freeVoteEnabled Boolean @default(true)
 
   roundsEnabled    Boolean @default(false)
