@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+env:
+  DATABASE_URL: postgresql://postgres:postgres@localhost:5432/second_chance_photo_contest?schema=public
+  DIRECT_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/second_chance_photo_contest?schema=public
+  NEXT_PUBLIC_SITE_URL: http://localhost:3000
+  PAYMENT_PROVIDER: mock
+  STORAGE_PROVIDER: local
+  MODERATION_PROVIDER: noop
+  ADMIN_SESSION_SECRET: ci-session-secret-not-for-production
+  ADMIN_EMAIL: admin@example.com
+  ADMIN_PASSWORD: ci-admin-password
+  ADMIN_DISABLE_PASSKEY_MFA: "true"
+
+jobs:
+  lint-test-build:
+    name: Typecheck, lint, unit tests, build
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: second_chance_photo_contest
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      - run: npx prisma migrate deploy
+      - run: npx tsc --noEmit -p .
+      - run: npm run lint
+      - run: npm test
+      # Runs the real build script (scripts/vercel-build.sh), the same one
+      # Vercel invokes — migrate deploy again (no-op), bootstrap the admin
+      # user, then `next build`. Env vars above are real job env, not a
+      # dotenv file, so the script's own DATABASE_URL/DIRECT_DATABASE_URL
+      # fallback logic (see ARCHITECTURE-equivalent notes) never triggers here.
+      - run: npm run build

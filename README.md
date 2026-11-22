@@ -77,6 +77,11 @@ npm test          # unit tests (Vitest)
 npm run test:e2e  # end-to-end tests (Playwright) — starts the dev server itself
 ```
 
+`.github/workflows/ci.yml` runs migrate/typecheck/lint/unit-test/build
+against a real Postgres service container on every push. There's no e2e
+job yet — `test:e2e` is wired up but no `*.spec.ts` files exist in this
+repo yet, so there's nothing for it to run.
+
 ## Deploying
 
 Deploy target is Vercel. `npm run build` runs `prisma migrate deploy`
